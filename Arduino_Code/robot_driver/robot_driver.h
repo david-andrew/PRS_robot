@@ -52,6 +52,64 @@
 #define RIGHT_START_BUTTON 29
 //#define fretboard_type_button -> controls which measurements to use for fretboards
 
+
+//Parameters for the laser
+#define LASER_SENSOR_PIN A15
+//#define LASER_CONTROL_PIN <number>
+#define LASER_UPPER_BOUND 1024  //for plotting the graph of the sensor response
+#define LASER_LOWER_BOUND 0     //for plotting the graph of the sensor response
+#define LASER_UPPER_TRIGGER 60 //signal must be at least this high to trigger the state of detecting the signal
+#define LASER_LOWER_TRIGGER 20  //signal must fall to at least this low to return to wating for a fret
+
+int response = 0;         //response observed from the light sensor
+int last_response = 0;    //previous response for derivative calculation
+int peak_response = 0;    //for finding the maximum/peak in a sequence of sensor readings
+// long index = 0;           //current index of sensor reading (used to simulate step number for actual robot)
+long peak_index = 0;      //index at which a peak was detected
+long trigger_index = 0;   //index that the most recent trigger was activated
+
+
+int LASER_AMBIENT_RESPONSE = 40;  //ambient lighting response: average over 100 samples of the sensor. Default is recorded room conditions in MESD test space
+int LASER_ACTIVE_RESPONSE = 980;  //laser response: average over 100 samples of the sensor response to the laser. Default is recorded room conditions in MESD test space
+
+//only one of these can be true at a time
+bool PLOT_SERIAL = false; //whether or not serial data should be printed
+bool CALIBRATE_LASER = false;//whether or not to calibrate the laser or use prerecorded values
+
+enum laser_states //states of the laser sensor during operation of the robot
+{
+  LASER_WAIT_START,       //before the robot sees the fretboard, it waits for start
+  LASER_SENSE_NEGATIVE,   //while the robot sees the board, but does not see a slot
+  LASER_SENSE_POSITIVE    //while the robot sees a slot.
+
+  //Transitions are as follows:
+  //NULL            ->  WAIT_START: on startup
+  //WAIT_START      ->  SENSE_NEGATIVE: when LOWER_TRIGGER is crossed
+  //SENSE_NEGATIVE  ->  SENSE_POSITIVE: when UPPER TRIGGER is crossed. During this period (SENSE_POSITIVE), search for a peak (might transition to wait_start)
+  //SENSE_POSITIVE  ->  SENSE_NEGATIVE: when LOWER_TRIGGER is crossed. This transition is the detection of a fret slot.
+  //SENSE_POSITIVE  ->  WAIT_START: when index - trigger_index > large value
+};
+
+laser_states laser_state = LASER_WAIT_START;  //initialize the laser sensor as waiting to see the fret board.
+
+//store the position of each slot, and the count of how many slots there are
+#define MAX_SLOTS 256 //god help you if this isn't big enough
+int slot_index = 0;
+long slot_position_buffer[MAX_SLOTS];
+bool detected_whole_board = false; //change to true, when the entire board has passed the laser
+
+
+
+
+//calibration parameters. Set these to true when each specific item is calibrated
+bool slide_motor_calibrated = false;
+bool glue_motor_calibrated = false;
+bool press_motor_calibrated = false;
+bool laser_sensor_calibrated = false;
+
+
+
+//motor control stuff
 const String motor_names[3] = {"SLIDE MOTOR", "GLUE MOTOR", "PRESS MOTOR"};
 
 //Number of steps per revolution set by the motor driver dip switches.
@@ -75,7 +133,16 @@ void reset_buffer();
 void handle_command();
 void wait_for_start();
 void check_limits();
+void zero_motors();
 void run_motors();
+void stop_motor(int index);
+
+//laser functions
+int get_average_laser_response();
+void calibrate_laser();
+void plot_laser_bounds();
+void detect_slots();
+
 
 
 //NO INTERRUPT FUNCTIONS
