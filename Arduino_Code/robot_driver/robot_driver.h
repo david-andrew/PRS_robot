@@ -1,3 +1,6 @@
+#ifndef ROBOT_DRIVER_H
+#define ROBOT_DRIVER_H
+
 /*
     Set up basic variables and functions for use in the robot driver
 
@@ -29,10 +32,12 @@
 
     If you want to modify the motor microstepping rate:
     1) set the dip switches to the positions specified above
-    2) replace the desired motor_rev_steps value with the number in the rev/steps column
+    2) replace the desired motor_rev_steps value with the number in the rev/steps column (currently this has bugs)
 */
 
+#include "SlotQueue.h"
 
+#define USE_EXTERNAL_SERIAL_MONITOR false //e.g. using PuTTY instead of serial monitor. Basically allows for carriage returns in serial
 
 //macros for the indices of each motor
 #define SLIDE 0
@@ -93,12 +98,24 @@ enum laser_states //states of the laser sensor during operation of the robot
 laser_states laser_state = LASER_WAIT_START;  //initialize the laser sensor as waiting to see the fret board.
 
 //store the position of each slot, and the count of how many slots there are
-#define MAX_SLOTS 256 //god help you if this isn't big enough
-int slot_index = 0;
-long slot_position_buffer[MAX_SLOTS];
+//#define MAX_SLOTS 256 //god help you if this isn't big enough
+int slot_index = 0; //TODO replace with something like num_slots
+long slot_position_buffer[256];//MAX_SLOTS];
 bool detected_whole_board = false; //change to true, when the entire board has passed the laser
 
 
+//TODO->replace the all caps ones with #define. variables for now so they can be tuned with the buttons
+//offsets from detected zero that each component is exactly aligned with
+long LASER_ALIGNMENT_OFFSET = -60;
+long GLUE_ALIGNMENT_OFFSET = 2926;
+long PRESS_ALIGNMENT_OFFSET = 5000;
+
+//for making glue passes, what side is the glue arm currently on?
+int GLUE_DIRECTION_SIGN = -1;
+
+//TODO->remove this
+//what parameter to tune using the buttons. commanding the slide to align with a target sets the current target to that. defaults to none of them
+char tune_slide_offset_target = ' '; //possible values, l:laser, g:glue, p:press.
 
 
 //calibration parameters. Set these to true when each specific item is calibrated
@@ -115,9 +132,11 @@ const String motor_names[3] = {"SLIDE MOTOR", "GLUE MOTOR", "PRESS MOTOR"};
 //Number of steps per revolution set by the motor driver dip switches.
 const float slide_rev_steps = 400;
 const float glue_rev_steps = 12800;//51200;
-const float press_rev_steps = 400;
+const float press_rev_steps = 12800;
 const float rev_steps[3] = {slide_rev_steps, glue_rev_steps, press_rev_steps};
-
+#define SLIDE_STEPPER_ACCELERATION 10000 //steps/second^2 very fast
+#define GLUE_STEPPER_ACCELERATION  10000
+#define PRESS_STEPPER_ACCELERATION 10000
 
 //variables for managing serial communication
 const int buffer_length = 32;             //length of serial buffer for commands. currently holds up to 32 chars
@@ -144,12 +163,26 @@ void plot_laser_bounds();
 void detect_slots();
 
 
+void target_slot(int slot, char target, bool all);
+void make_glue_pass();
+//void move_to_laser(long slot_position);
+//void move_to_glue(long slot_position);
+//void move_to_press(long slot_position);
 
-//NO INTERRUPT FUNCTIONS
-// //limit switch interrupt functions
-// void slide_start_limit_interrupt();
-// void slide_stop_limit_interrupt();
-// void glue_start_limit_interrupt();
-// void glue_stop_limit_interrupt();
-// void press_start_limit_interrupt();
-// void press_stop_limit_interrupt();
+
+
+
+//state machine for the robot //may need to add more based on final robot setup
+enum robotStates 
+{
+  STATE_CALIBRATING,    //calibrate the stepper positions using the limit switches. Also calibrate the laser sensor
+//  STATE_SEARCH_BOARD,   //drive the slide forward until the start of the board is found
+  STATE_MANAGE_SLOTS,   //perform glue and press steps as they come up in the queues (ensuring no slot waits too long from glue to press)
+  STATE_FINISH_BOARD,   //after the all queues have been cleared, return the board, and wait for a new board
+};
+
+Slot current_slot_target; //current slot that an action is being performed on
+bool action_in_progress = false; //whether or not the manager is currently performing an action, e.g. align slot with glue arm
+
+
+#endif

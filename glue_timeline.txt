@@ -1,0 +1,60 @@
+Human Glue performance (5 at a time)
+00:02 glue 0
+00:04 glue 1
+00:06 glue 2
+00:07 glue 3
+00:09 glue 4
+00:11 glue 0 (again)
+
+00:19 place 0
+00:21 place 1
+00:24 place 2
+00:26 place 3
+00:28 place 4
+
+00:31 press 0
+00:32 press 1
+00:33 press 2
+00:33 press 3
+00:34 press 4
+
+
+
+glue_times =  [11  4  6  8  9]
+place_times = [19 21 24 26 28]
+press_times = [31 32 33 33 34]
+glue_to_place =  [8  17 18 18 19]
+place_to_press = [12 11  9  7  6]
+glue_to_press =  [20 28 27 25 25] -> this is the target
+
+Aim for no more than 25(s) from glue bead down to fret pressed in the slot
+
+
+
+
+The robot's performance (glue pass without pressing arm)
+00:43 glue 0
+00:46 glue 1
+00:48 glue 2
+00:51 glue 3
+00:53 glue 4
+00:56 glue 5
+00:58 glue 6
+01:00 glue 7
+01:03 glue 8
+01:05 glue 9
+01:08 glue 10
+01:10 glue 11
+01:13 glue 12
+01:16 glue 13
+01:18 glue 14
+01:21 glue 15
+01:23 glue 16
+01:26 glue 17
+01:29 glue 18
+01:31 glue 19
+01:34 glue 20
+01:37 glue 21
+01:40 glue 22
+01:43 glue 23
+

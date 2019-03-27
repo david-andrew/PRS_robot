@@ -38,8 +38,9 @@
 */
 
 
-#include "robot_driver.h"
 #include <AccelStepper.h>
+#include "robot_driver.h"
+#include "SlotQueue.h"
 
 
 
@@ -51,7 +52,75 @@ AccelStepper motors[3] = {slide_motor, glue_motor, press_motor}; //store each mo
 
 
 bool roaming[3] = {false, false, false}; //whether or not that motor is roaming
-//bool roam_direction[3] = {true, true, true};   //direction to move while roaming. true for forward, false for backwards
+
+//parameters to manage each task for slots as they are found
+SlotQueue glue_queue();     //queue for slots waiting to get glue
+SlotQueue press_queue();    //queue for slots waiting to be pressed. No slot should be in this queue for more than 30 seconds
+
+Slot slots_list[MAX_SLOTS]; //store a list of every slot found
+int num_slots = 0;          //index for the list of all of the slots
+
+robotStates robot_state = STATE_CALIBRATING; //keep track of the state of the whole robot
+
+
+
+
+
+
+
+//TODO-> remove this tuning section of the code?
+//alternative would be that there needs to be some way to permenantly set a value..., perhaps with an sd card?
+bool last_button_left = false;
+bool last_button_right = false;
+
+void tune_slide_offset()
+{
+  bool button_left =  digitalRead(LEFT_START_BUTTON);
+  bool button_right = digitalRead(RIGHT_START_BUTTON);
+
+  if ((button_left /*&& !last_button_left*/) || (button_right /*&& !last_button_right*/)) //uncomment if we want to maintain only one increment per button
+  {
+    int delta = 0;
+    if (button_left)
+    {
+      delta -= 1;
+    }
+    else
+    {
+      delta += 1;
+    }
+    switch (tune_slide_offset_target)
+    {
+      case 'l':
+        LASER_ALIGNMENT_OFFSET += delta;
+        Serial.println("set LASER_ALIGNMENT_OFFSET: " + String(LASER_ALIGNMENT_OFFSET));
+        break;
+      case 'g':
+        GLUE_ALIGNMENT_OFFSET += delta;
+        Serial.println("set GLUE_ALIGNMENT_OFFSET: " + String(GLUE_ALIGNMENT_OFFSET));
+        break;
+      case 'p':
+        PRESS_ALIGNMENT_OFFSET += delta;
+        Serial.println("set PRESS_ALIGNMENT_OFFSET: " + String(PRESS_ALIGNMENT_OFFSET));
+        break;
+    }
+  }
+
+  last_button_left = button_left;
+  last_button_right = button_right;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void setup()
@@ -59,15 +128,16 @@ void setup()
 {
   //Set up parameters for Glue motor
   motors[GLUE].setMaxSpeed(rev_steps[GLUE] * 5);
-  motors[GLUE].setAcceleration(rev_steps[GLUE]* 5);
+  motors[GLUE].setAcceleration(GLUE_STEPPER_ACCELERATION);
 
   //Set up parameters for linear slide motor
   motors[SLIDE].setMaxSpeed(rev_steps[SLIDE] * 5);
-  motors[SLIDE].setAcceleration(rev_steps[SLIDE]);
+  motors[SLIDE].setAcceleration(SLIDE_STEPPER_ACCELERATION); 
+  
 
   //Set up parameters for fret press motor
   motors[PRESS].setMaxSpeed(rev_steps[PRESS] * 5);
-  motors[PRESS].setAcceleration(rev_steps[PRESS]);
+  motors[PRESS].setAcceleration(PRESS_STEPPER_ACCELERATION);
 
   //Set up pneumatics
   //TODO
@@ -88,7 +158,7 @@ void setup()
 
 
   //set up serial communication
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial) {}  //wait for serial port connection
 
   wait_for_start();   //wait for the user to press both start buttons
@@ -96,8 +166,17 @@ void setup()
   
   //Remove the 'if' when we can control the laser on and off
   if (CALIBRATE_LASER) { calibrate_laser(); } //calibrate the laser sensor.
-  
-  Serial.println("Ready for commands");
+
+  robot_state = STATE_MANAGE_SLOTS; //now the robot is searching for the board, and frets to put enqueue
+
+
+  //start the slide motor moving to detect the slots. 
+  //this position should be well beyond the end of the robot, 
+  //ensuring the board will pass the laser.
+  //when the first slot is found, the robot switches into management mode
+  motors[SLIDE].moveTo(25000000); 
+  Serial.println("Beginning robot sequence.");
+  Serial.println("(Ready for commands)");
 }
 
 
@@ -122,14 +201,19 @@ void loop()
     }
   }
 
-  //TODO -> replace the detected_whole_board variable (and maybe the slide_motor_calibrated) variable with a state variable for the robot
-  if (slide_motor_calibrated && !detected_whole_board) //detect slots until we see the end of the board
-  { 
+//  //TODO -> replace the detected_whole_board variable (and maybe the slide_motor_calibrated) variable with a state variable for the robot
+//  if (slide_motor_calibrated && !detected_whole_board) //detect slots until we see the end of the board
+//  { 
+//    detect_slots(); 
+//  }
+
+  if (robot_state == STATE_MANAGE_SLOTS)
+  {
     detect_slots(); 
   }
-
   check_limits();
   run_motors();
+  tune_slide_offset();
 }
 
 
@@ -248,53 +332,25 @@ void handle_command()
     case 'r': //roam along the track
     {
       Serial.println("Telling " + motor_names[motor_index] + " to ROAM along its domain");
-//      if (roam_direction[motor_index])
-//      {
-//        motors[motor_index].move(2147483647);
-//      }
-//      else 
-//      {
-//        motors[motor_index].move(-2147483648);
-//      }
-      motors[motor_index].move(2147483647);
+      motors[motor_index].move(2147483647); //start by trying the forward direction
       roaming[motor_index] = true;
       break;
     }
 
-    case 'l': //move to the nth detected laser slot
+    case 't': //(t)arget. move the nth slot to the specified target
     {
-      if (motor_index != 0)
-      {
-        //Move sequentially to every fret, pausing in between each
-        Serial.println("Cycling through all slots detected on board");
-        for (int i=0; i<slot_index; i++)
-        {
-          motors[SLIDE].moveTo(slot_position_buffer[i] - 30);
-          while (abs(motors[SLIDE].distanceToGo()) > 0)
-          {
-            check_limits();
-            run_motors();
-          }
-          delay(500);
-        }
-        
-      }
-      else
-      {
-        //Move the slide motor so that the nth fret lines up with the laser
-        int fret_index = (int) get_buffer_num();
-        if (fret_index < slot_index)
-        {
-          Serial.println("Moving fret board to " + String(fret_index) + "th fret slot");
-          motors[SLIDE].moveTo(slot_position_buffer[fret_index] - 30);  //motor index actually is just the index of the slot we want to move to
-          //-30 is to tune the alignment accouting for the delay based on when the slot was detected at speed
-        }
-        else
-        {
-          Serial.println("Warning: specified move to slot " + String(fret_index) + ", but only detected up to slot " + String(slot_index-1) + "!");  
-        }
-      }
+      int slot = get_buffer_num();
+      char target = motor_index + 48; //convert the motor index back from a single digit to an ascii character
+      if (slot < 0) { target_slot(-slot, target, true); }
+      else { target_slot(slot, target, false); }
+      tune_slide_offset_target = target; //make it so the tuning buttons operate for whatever we targeted last
       break;
+    }
+
+    case 'g': //make glue pass
+    {
+      make_glue_pass();
+      break;  
     }
 
     default:
@@ -311,18 +367,29 @@ void handle_command()
 void wait_for_start()
 /* block until both start buttons are pressed */
 {
-  long i = 0;
   while (!digitalRead(LEFT_START_BUTTON) || !digitalRead(RIGHT_START_BUTTON))
   {
-    if (i++ % 10000 == 0)
+    Serial.print("Waiting for start:\tLeft ");
+    Serial.print(digitalRead(LEFT_START_BUTTON) ? "(pressed)" : "(       )");
+    Serial.print(". Right ");
+    Serial.print(digitalRead(RIGHT_START_BUTTON) ? "(pressed)" : "(       )");
+    
+    if (USE_EXTERNAL_SERIAL_MONITOR)
     {
-      Serial.print("Waiting for start:\tLeft ");
-      Serial.print(digitalRead(LEFT_START_BUTTON) ? "(pressed)" : "(       )");
-      Serial.print(". Right ");
-      Serial.println(digitalRead(RIGHT_START_BUTTON) ? "(pressed)" : "(       )");
+      //external serial monitors understand control characters (i.e. \r puts cursor at start of line, which allows the new line to be reprinted on top of the last line)
+      Serial.print('\r'); //print from the start of the serial line
+      delay(10); //so that there isn't flickering   
+    }
+    else
+    {
+      //arduino serial monitor doesn't understand \r, so we use newlines instead
+      Serial.println(); //for regular serial monitor
+      delay(100);
     }
   }
-  Serial.println("Robot Activated!");  
+  //indicate that the system has successfully activated
+  Serial.println("Waiting for start:\tLeft (pressed). Right (pressed)");
+  Serial.println("Robot Activated!");
 }
 
 void check_limits()
@@ -372,6 +439,9 @@ void zero_motors()
     check_limits();
     run_motors();
   }
+  
+  //slowly move away until the limit is released
+  motors[SLIDE].setAcceleration(100); //slow the acceleration for this part so that the location is precise
 
   //progress the slide motor until the limit releases
   motors[SLIDE].move(1000); //TODO -> relate this to the speed? probably doesn't matter
@@ -382,10 +452,14 @@ void zero_motors()
   stop_motor(SLIDE);
   motors[SLIDE].setCurrentPosition(0); //set this position to be the true zero datum. This should be somewhat accurate
 
+  //set the acceleration back to normal
+  motors[SLIDE].setAcceleration(SLIDE_STEPPER_ACCELERATION);
 
   // repeat for //&& !glue_motor_calibrated && !press_motor_calibrated)
     //motors[GLUE].move(-2147483648);
   //motors[PRESS].move(-2147483648);
+
+  delay(1000); //let everything stop any momentup before starting anything
 }
 
 void run_motors()
@@ -526,4 +600,93 @@ void detect_slots()
   
   
   last_response = response;
+}
+
+
+
+
+
+void target_slot(int slot, char target, bool all)
+{
+  /*
+  align the specified slot with the target item (or align with every slot)
+    
+  slot is the index of the slot to target
+  target is the feature on the robot to align the slot with
+    
+  targets can be:
+    'l' for laser
+    'g' for glue arm
+    'p' for press arm
+
+  all=true will tell the slide to align the target with every slot detected so far (mainly for demos)    
+  */
+
+  //set the offset to be correct for the location being targeted
+  long SLIDE_ALIGNMENT_OFFSET = 0;
+  switch (target)
+  {
+    case 'l':
+      SLIDE_ALIGNMENT_OFFSET = LASER_ALIGNMENT_OFFSET;
+      break;
+    case 'g':
+      SLIDE_ALIGNMENT_OFFSET = GLUE_ALIGNMENT_OFFSET;
+      break;
+    case 'p':
+      SLIDE_ALIGNMENT_OFFSET = PRESS_ALIGNMENT_OFFSET;
+      break;
+  }
+
+  
+  if (all) //demonstrate moving to all 
+  {
+    //Move sequentially to every fret, pausing in between each
+    Serial.println("Cycling through all slots detected on board");
+    for (int i=0; i<slot_index; i++)
+    {
+      motors[SLIDE].moveTo(slot_position_buffer[i] + SLIDE_ALIGNMENT_OFFSET);
+      while (abs(motors[SLIDE].distanceToGo()) > 0)
+      {
+        check_limits();
+        run_motors();
+      }
+      //either make a glue pass and continue immediately, or pause for a moment so that alignment can be checked
+      if (target == 'g') make_glue_pass();
+      else { delay(500); }
+    }
+    if (GLUE_DIRECTION_SIGN == 1)
+    {
+      make_glue_pass(); //reset glue arm to left of fretboard  
+    }
+    Serial.println("Completed cycle through all slots");
+    
+  }
+  else
+  {
+    //Move the slide motor so that the nth fret lines up with the laser
+    //int fret_index = (int) get_buffer_num();
+    if (slot < slot_index)
+    {
+      Serial.println("Moving fret board to " + String(slot) + "th fret slot");
+      motors[SLIDE].moveTo(slot_position_buffer[slot] + SLIDE_ALIGNMENT_OFFSET);
+    }
+    else
+    {
+      Serial.println("Warning: specified move to slot " + String(slot) + ", but only detected up to slot " + String(slot_index-1) + "!");  
+    }
+  }  
+}
+
+
+void make_glue_pass()
+{
+  //sweep the glue arm accross the board
+
+  motors[GLUE].move(GLUE_DIRECTION_SIGN*8000); //move accross the board, then back
+  while (abs(motors[GLUE].distanceToGo()) > 0)
+  {
+    check_limits();
+    run_motors();
+  }
+  GLUE_DIRECTION_SIGN *= -1;
 }

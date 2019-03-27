@@ -23,7 +23,7 @@ int AMBIENT_RESPONSE = 40;  //ambient lighting response: average over 100 sample
 int ACTIVE_RESPONSE = 980;  //laser response: average over 100 samples of the sensor response to the laser. Default is recorded room conditions in MESD test space
 
 //only one of these can be true at a time
-bool PLOT_SERIAL = false; //whether or not serial data should be printed
+bool PLOT_SERIAL = true; //whether or not serial data should be printed
 bool CALIBRATE_LASER = false;//whether or not to calibrate the laser or use prerecorded values
 
 enum laser_states //states of the laser sensor during operation of the robot
