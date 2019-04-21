@@ -23,18 +23,20 @@
 #define PIN_OPEN 10
 #define PIN_CLOSE 11
 
+#define INVERT_CLOSE false 
+//set to true if you want both outputs to be the same
+//i.e. [open=HIGH, close=HIGH], and [open=LOW, close=LOW]
+//normal operation is that open and close are opposites
+
 
 //start closed
 int ostate = LOW;
 int cstate = HIGH;
 
-bool invert_close = false; 
-//set to true if you want both outputs to be the same
-//i.e. [open=HIGH, close=HIGH], and [open=LOW, close=LOW]
-//normal operation is that open and close are opposites
+
 
 void setup() {
-  if (invert_close) cstate = LOW; //if close pin is inverted, set close to inverted initial state (i.e. not HIGH = LOW)
+  if (INVERT_CLOSE) cstate = LOW; //if close pin is inverted, set close to inverted initial state (i.e. not HIGH = LOW)
   
   //Set up serial communication
   Serial.begin(9600);
@@ -57,12 +59,12 @@ void loop() {
     if (ostate == HIGH)
     {
       ostate = LOW;
-      cstate = invert_close ? LOW : HIGH;
+      cstate = INVERT_CLOSE ? LOW : HIGH;
     }
     else 
     {
       ostate = HIGH;
-      cstate = invert_close ? HIGH : LOW;
+      cstate = INVERT_CLOSE ? HIGH : LOW;
     }
 
     //write the new state to the pins, and display the current state of the pins
