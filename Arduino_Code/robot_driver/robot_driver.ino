@@ -54,10 +54,10 @@ AccelStepper motors[3] = {slide_motor, glue_motor, press_motor}; //store each mo
 bool roaming[3] = {false, false, false}; //whether or not that motor is roaming
 
 //parameters to manage each task for slots as they are found
-SlotQueue glue_queue();     //queue for slots waiting to get glue
-SlotQueue press_queue();    //queue for slots waiting to be pressed. No slot should be in this queue for more than 30 seconds
+SlotQueue glue_queue;     //queue for slots waiting to get glue
+SlotQueue press_queue;    //queue for slots waiting to be pressed. No slot should be in this queue for more than 30 seconds
 
-Slot slots_list[MAX_SLOTS]; //store a list of every slot found
+Slot* slots_list[MAX_SLOTS]; //store a list of every slot found
 int num_slots = 0;          //index for the list of all of the slots
 
 robotStates robot_state = STATE_CALIBRATING; //keep track of the state of the whole robot
@@ -167,6 +167,7 @@ void setup()
   //Remove the 'if' when we can control the laser on and off
   if (CALIBRATE_LASER) { calibrate_laser(); } //calibrate the laser sensor.
 
+  laser_state = LASER_WAIT_START;
   robot_state = STATE_MANAGE_SLOTS; //now the robot is searching for the board, and frets to put enqueue
 
 
@@ -209,7 +210,8 @@ void loop()
 
   if (robot_state == STATE_MANAGE_SLOTS)
   {
-    detect_slots(); 
+    detect_slots(); //add any detected slots into glue queue
+    manage_slots(); //perform glue and press actions based on slot order in queues
   }
   check_limits();
   run_motors();
@@ -539,7 +541,8 @@ void detect_slots()
         laser_state = LASER_SENSE_NEGATIVE;
         trigger_index = index;
       }
-    }break;
+    }
+    break;
 
 
     //sensing the fret board. wait until a slot starts to appear
@@ -556,7 +559,8 @@ void detect_slots()
         peak_response = 0;
         peak_index = 0;
       }
-    }break;
+    }
+    break;
 
 
 
@@ -580,6 +584,12 @@ void detect_slots()
         trigger_index = index;
         //save the step position into the slot_position_buffer
         slot_position_buffer[slot_index++] = index;
+
+        //TODO->remove old code from above and replace simply with queue management system
+        //place the detected slot into the queue to recieve glue
+        Slot* s; s->timestamp = millis(); s->coordinate = index; //declare an instance of the current slot
+        glue_queue.enqueue(s);
+        slots_list[num_slots++] = s;
       }
       else if (index - trigger_index > 200) //if trigger index is significantly different from the current index, then the fretboard has completely passed the sensor. This number should be larger than any single slot could be in step size
       {
@@ -603,6 +613,48 @@ void detect_slots()
 }
 
 
+
+void manage_slots()
+{
+  if (num_slots > 0) 
+  {
+    if (!slot_in_progress)
+    {
+      //perform an action on the next slot
+      //TODO->write thing to look for closest action based on first in glue_queue vs press_queue
+      current_slot = glue_queue.dequeue();
+      current_slot->target = 'g';//set target action of slot to glue
+      motors[SLIDE].moveTo(current_slot->coordinate + GLUE_ALIGNMENT_OFFSET);
+      slot_in_progress = true;
+    }
+    else
+    {
+      //check if finished. if so, perform current action
+      if (motors[SLIDE].distanceToGo() == 0)
+      {
+        //TODO->write to perform action based on target in the current object
+        switch (current_slot->target)
+        {
+          case 'g':
+          {
+            make_glue_pass();
+            current_slot->target = 'p';//for press
+            press_queue.enqueue(current_slot);
+            break;    
+          }
+          case 'p':
+          {
+            //todo, implement this
+            break;
+          }
+        }
+        
+        
+        slot_in_progress = false;
+      }
+    }
+  }
+}
 
 
 

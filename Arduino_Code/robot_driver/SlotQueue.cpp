@@ -1,4 +1,5 @@
 #include "SlotQueue.h"
+#include <Arduino.h>
 
 //construct a SlotQueue object
 SlotQueue::SlotQueue()
@@ -10,7 +11,7 @@ SlotQueue::SlotQueue()
 }
 
 //adds a slot to the end of the queue
-void SlotQueue::enqueue(Slot s)
+void SlotQueue::enqueue(Slot* s)
 {
     if (num_slots >= MAX_SLOTS) 
         return; //if the queue is full, do nothing. This will never happen, unless the guitar has more than 256 slots.
@@ -20,20 +21,20 @@ void SlotQueue::enqueue(Slot s)
 }
 
 //removes the first slot from the queue and returns it
-Slot SlotQueue::dequeue()
+Slot* SlotQueue::dequeue()
 {
     if (num_slots <= 0) 
-        return (Slot) {0, -1};              //return an empty slot if none are left
+        return NULL;              //return an empty slot if none are left
 
     num_slots--;                            //update the number of slots in the queue
     return queue[start++ % MAX_SLOTS];      //return the slot at the head of the queue
 }
 
 //returns a slot from the queue without removing it
-Slot SlotQueue::get(int n)
+Slot* SlotQueue::get(int n)
 {
     if (n > num_slots) 
-        return (Slot) {0, -1};              //return an empty slot
+        return NULL;              //return an empty slot
     
     return queue[(start + n) % MAX_SLOTS];  //return the selected slot
 }

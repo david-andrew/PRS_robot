@@ -161,6 +161,7 @@ int get_average_laser_response();
 void calibrate_laser();
 void plot_laser_bounds();
 void detect_slots();
+void manage_slots();
 
 
 void target_slot(int slot, char target, bool all);
@@ -181,8 +182,8 @@ enum robotStates
   STATE_FINISH_BOARD,   //after the all queues have been cleared, return the board, and wait for a new board
 };
 
-Slot current_slot_target; //current slot that an action is being performed on
-bool action_in_progress = false; //whether or not the manager is currently performing an action, e.g. align slot with glue arm
+Slot* current_slot;    //current slot that an action is being performed on
+bool slot_in_progress = false; //whether or not the manager is currently performing an action, e.g. align slot with glue arm
 
 
 #endif
