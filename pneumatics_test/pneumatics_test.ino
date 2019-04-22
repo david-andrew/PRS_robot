@@ -20,10 +20,10 @@
 
  */
 
-#define PIN_OPEN 10
-#define PIN_CLOSE 11
+#define PIN_OPEN 12
+#define PIN_CLOSE 13
 
-#define INVERT_CLOSE false 
+#define INVERT_CLOSE true 
 //set to true if you want both outputs to be the same
 //i.e. [open=HIGH, close=HIGH], and [open=LOW, close=LOW]
 //normal operation is that open and close are opposites
@@ -36,6 +36,10 @@ int cstate = HIGH;
 
 
 void setup() {
+//  //prevent pins from floating on boot? DOESN'T ACTUALLY WORK... NEED TO SET PULLDOWN RESISTORS ON RELAYS
+//  pinMode(PIN_OPEN, INPUT_PULLUP);
+//  pinMode(PIN_CLOSE, INPUT_PULLUP);
+  
   if (INVERT_CLOSE) cstate = LOW; //if close pin is inverted, set close to inverted initial state (i.e. not HIGH = LOW)
   
   //Set up serial communication
