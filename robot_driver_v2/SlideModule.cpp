@@ -4,11 +4,9 @@
     Purpose: Class to manage the slide motor for moving the fretboard
 
     @author David Samson
-    @version 1.0 4/22/19
+    @version 1.0
+    @date 2019-04-22
 */
-
-#ifndef SLIDE_MODULE_CPP
-#define SLIDE_MODULE_CPP
 
 #include "SlideModule.h"
 #include <Arduino.h>
@@ -26,8 +24,19 @@ SlideModule::SlideModule()
     this->set_acceleration(STEPPER_ACCELERATION);
 
     //initialize the limit switches for the motor
-    pinMode(PIN_MIN_LIMIT, INPUT);
-    pinMode(PIN_MAX_LIMIT, INPUT);
+    pinMode(PIN_MIN_LIMIT, INPUT_PULLUP);
+    pinMode(PIN_MAX_LIMIT, INPUT_PULLUP);
+}
+
+
+/**
+    return a reference to the AccelStepper object. Used by the laser sensor for tracking slide position
+
+    @return AccelStepper* slide_motor is a reference to the slide motor object
+*/
+AccelStepper* SlideModule::get_stepper_reference()
+{
+    return &(this->slide_motor);
 }
 
 
@@ -61,16 +70,19 @@ void SlideModule::set_acceleration(float acceleration)
 int SlideModule::calibrate()
 {
     //slide the motor back until it presses the button
+    Serial.println("Calibrating Slide Motor:");
+    Serial.println("finding minimum limit...");
     this->move_to(LONG_MIN);
-    while (!digitalRead(PIN_MIN_LIMIT))
+    while (digitalRead(PIN_MIN_LIMIT) == LOW)
     {
         this->run();
     }
-    
+
+    Serial.println("Slowly releasing limit...");
     //slowly slide the motor forward until the button is released
     this->set_max_speed(STEPPER_SLOW_SPEED);
     this->move_to(LONG_MAX);
-    while (digitalRead(PIN_MIN_LIMIT))
+    while (digitalRead(PIN_MIN_LIMIT) == HIGH)
     {
         this->run();
     }
@@ -80,7 +92,7 @@ int SlideModule::calibrate()
 
     //reset the speed back to normal
     this->set_max_speed(STEPPER_SPEED);
-
+    Serial.println("Done");
     return 0;
 }
 
@@ -111,6 +123,7 @@ void SlideModule::stop()
 */
 void SlideModule::run()
 {
+    this->check_limits();
     this->slide_motor.run();
 }
 
@@ -120,14 +133,16 @@ void SlideModule::run()
 */
 void SlideModule::check_limits()
 {
-    if ((this->slide_motor.distanceToGo() > 0 && digitalRead(PIN_MAX_LIMIT) == LOW) ||
-        (this->slide_motor.distanceToGo() < 0 && digitalRead(PIN_MIN_LIMIT) == LOW))
+    long distance = this->slide_motor.distanceToGo();
+    if (distance > 0 && digitalRead(PIN_MAX_LIMIT) == HIGH)
+    {
+      this->stop();
+      Serial.println("Stopping slide at MAX_LIMIT");
+    }
+    else if (distance < 0 && digitalRead(PIN_MIN_LIMIT) == HIGH)
     {
         this->stop();
+        Serial.println("Stopping slide at MIN_LIMIT");
     }
  
 }
-
-
-
-#endif

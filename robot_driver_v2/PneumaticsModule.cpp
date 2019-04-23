@@ -5,11 +5,9 @@
     (actuators include fret presser, glue dispenser, and fret wire snips)
 
     @author David Samson
-    @version 1.0 4/22/19
+    @version 1.0 
+    @date 2019-04-22
 */
-
-#ifndef PNEUMATICS_MODULE_CPP
-#define PNEUMAITCS_MODULE_CPP
 
 #include "PneumaticsModule.h"
 #include <Arduino.h>
@@ -136,6 +134,3 @@ String PneumaticsModule::repr()
 {
     return "Open:[" + String(this->getOpenState()) + "] | Close:[" + String(this->getCloseState()) + "]";
 }
-
-
-#endif
