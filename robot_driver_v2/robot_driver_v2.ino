@@ -1,19 +1,49 @@
-#include "Robot.h"
+#include "PneumaticsModule.h"
 
-Robot* PRS_Fret_Press_Robot = new Robot();
+//to actuate a pneumatic, uncomment the desired pneumatic (AND MAKE SURE ALL OTHERS ARE COMMENTED).
+//Then upload the code to the robot with the power turned on
 
-void setup()
-{
-	Serial.begin(115200);
-	PRS_Fret_Press_Robot->calibrate();
-	PRS_Fret_Press_Robot->detect_slots();
-	PRS_Fret_Press_Robot->press_frets();
-}
+// PneumaticsModule press_pneumatics = PneumaticsModule(11, 10, false);                //lower the press
+// PneumaticsModule press_pneumatics = PneumaticsModule(11, 10, true);                 //raise the press
 
-void loop()
-{
+// PneumaticsModule snip_pneumatics = PneumaticsModule(12, 13, false, true, false);    //open snips
+// PneumaticsModule snip_pneumatics = PneumaticsModule(12, 13, true, true, false);     //close snips
 
-}
+// PneumaticsModule glue_pneumatics = PneumaticsModule(7, 6, false);                   //stop glue
+// PneumaticsModule glue_pneumatics = PneumaticsModule(7, 6, true);                    //squirt glue
+
+void setup(){}
+void loop(){}
+
+
+
+
+
+
+
+
+
+
+
+
+// #include "Robot.h"
+
+// Robot* PRS_Fret_Press_Robot = new Robot();
+
+// void setup()
+// {
+//  Serial.begin(115200);
+//  PRS_Fret_Press_Robot->calibrate();
+//  PRS_Fret_Press_Robot->detect_slots();
+//  PRS_Fret_Press_Robot->press_frets();
+// }
+
+// void loop()
+// {
+
+// }
+
+
 
 
 // #include "PneumaticsModule.h"
@@ -66,49 +96,49 @@ void loop()
 // void loop() 
 // {
 
-// 	// slide_module.run();
-// 	// if (state == 0)
-// 	// {
-// 	// 	laser_module.detect_slots(true);
-// 	// 	if (laser_module.done())
-// 	// 	{
-// 	// 		state = 1;
-// 	// 		slide_module.stop();
-// 	// 		slot_buffer = laser_module.get_slot_buffer();
-// 	// 		num_slots = laser_module.get_num_slots();
-// 	// 		Serial.println("is slide running: " + String(slide_module.is_running()));
-// 	// 		delay(1000);
-// 	// 	}
-// 	// }
-// 	// else if (state == 1)
-// 	// {
-// 	// 	if (!slide_module.is_running())
-// 	// 	{
-// 	// 		if (i < num_slots)
-// 	// 		{
-// 	// 			slide_module.move_absolute(slot_buffer[i++]);
-// 	// 			delay(1000);
-// 	// 		}
-// 	// 		else
-// 	// 		{
-// 	// 			state = 2;
-// 	// 			delay(1000);
-// 	// 		}
-// 	// 	}
-// 	// }
-// 	// else
-// 	// {
-// 	// 	if (!slide_module.is_running())
-// 	// 	{
-// 	// 		slide_module.move_absolute(0);	//return to origin
-// 	// 	}
-// 	// }
+//  // slide_module.run();
+//  // if (state == 0)
+//  // {
+//  //  laser_module.detect_slots(true);
+//  //  if (laser_module.done())
+//  //  {
+//  //      state = 1;
+//  //      slide_module.stop();
+//  //      slot_buffer = laser_module.get_slot_buffer();
+//  //      num_slots = laser_module.get_num_slots();
+//  //      Serial.println("is slide running: " + String(slide_module.is_running()));
+//  //      delay(1000);
+//  //  }
+//  // }
+//  // else if (state == 1)
+//  // {
+//  //  if (!slide_module.is_running())
+//  //  {
+//  //      if (i < num_slots)
+//  //      {
+//  //          slide_module.move_absolute(slot_buffer[i++]);
+//  //          delay(1000);
+//  //      }
+//  //      else
+//  //      {
+//  //          state = 2;
+//  //          delay(1000);
+//  //      }
+//  //  }
+//  // }
+//  // else
+//  // {
+//  //  if (!slide_module.is_running())
+//  //  {
+//  //      slide_module.move_absolute(0);  //return to origin
+//  //  }
+//  // }
 
 
-// 	// else 
-// 	// { 
-// 	// 	laser_module.plot_sensor_response(); 
-// 	// }
+//  // else 
+//  // { 
+//  //  laser_module.plot_sensor_response(); 
+//  // }
 // //  Serial.print(digitalRead(47));
 // //  Serial.print(" ");
 // //  Serial.print(digitalRead(45));
