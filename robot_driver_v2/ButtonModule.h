@@ -16,6 +16,26 @@
 #define BUFFER_LENGTH 5                     //number of previous readings to check over for debouncing
 #define ACTIVATION_THRESHOLD 0.5            //fraction of readings that must be positive for the button to be pressed
 
+
+/**
+    The ButtonModule class is a helper class sensing buttons on the robot
+    This class reads digital button inputs and performs denoising of the readings
+    To denoise the input, several previous readings are stored into a buffer,
+    and then the average reading in the buffer is compared to an activation threshold
+
+    Example Usage:
+    
+    ```
+    ButtonModule min_limit = ButtonModule(41);          //create a button object
+    ButtonModule max_limit = ButtonModule(43, true);    //create a button object with inverted output
+
+    loop()
+    {
+        min_limit.read();   //returns HIGH or LOW
+        max_limit.read();   //returns inverted HIGH or LOW
+    }
+    ```
+*/
 class ButtonModule
 {
 public:
@@ -29,7 +49,7 @@ private:
     uint8_t pin;
     bool invert;
     uint8_t state_buffer[BUFFER_LENGTH];    //buffer (queue) to store the previous states of the switch
-    int tail = 0;                           //end of the buffer data structure
+    unsigned long tail = 0;                 //end of the buffer data structure. Should always be read as tail%BUFFER_LENGTH
 };
 
 #endif

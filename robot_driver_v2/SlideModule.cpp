@@ -9,6 +9,7 @@
 */
 
 #include "SlideModule.h"
+#include "ButtonModule.h"
 #include <Arduino.h>
 #include <limits.h>
 
@@ -19,13 +20,13 @@
 SlideModule::SlideModule()
 {
     //initialize the AccelStepper object for the slide motor
-    this->slide_motor = AccelStepper(AccelStepper::DRIVER, 3, 2);
-    this->set_max_speed(STEPPER_SPEED);
+    this->slide_motor = new AccelStepper(AccelStepper::DRIVER, 3, 2);
+    this->set_max_speed(STEPPER_MAX_SPEED);
     this->set_acceleration(STEPPER_ACCELERATION);
 
     //initialize the limit switches for the motor
-    pinMode(PIN_MIN_LIMIT, INPUT_PULLUP);
-    pinMode(PIN_MAX_LIMIT, INPUT_PULLUP);
+    min_limit = new ButtonModule(PIN_MIN_LIMIT);
+    max_limit = new ButtonModule(PIN_MAX_LIMIT);
 }
 
 
@@ -36,7 +37,7 @@ SlideModule::SlideModule()
 */
 AccelStepper* SlideModule::get_stepper_reference()
 {
-    return &(this->slide_motor);
+    return slide_motor;
 }
 
 
@@ -47,7 +48,7 @@ AccelStepper* SlideModule::get_stepper_reference()
 */
 void SlideModule::set_max_speed(float speed)
 {
-    this->slide_motor.setMaxSpeed(speed);
+    slide_motor->setMaxSpeed(speed);
 }
 
 
@@ -58,7 +59,7 @@ void SlideModule::set_max_speed(float speed)
 */
 void SlideModule::set_acceleration(float acceleration)
 {
-    this->slide_motor.setAcceleration(acceleration);
+    slide_motor->setAcceleration(acceleration);
 }
 
 
@@ -71,28 +72,32 @@ int SlideModule::calibrate()
 {
     //slide the motor back until it presses the button
     Serial.println("Calibrating Slide Motor:");
-    Serial.println("finding minimum limit...");
-    this->move_to(LONG_MIN);
-    while (digitalRead(PIN_MIN_LIMIT) == LOW)
+    Serial.println("Finding minimum limit...");
+    set_max_speed(STEPPER_MEDIUM_SPEED);
+    move_relative(LONG_MIN);
+    while (min_limit->read() == LOW)
     {
-        this->run();
+        run();
     }
+    delay(500);     //delay to stop momentum
 
-    Serial.println("Slowly releasing limit...");
     //slowly slide the motor forward until the button is released
-    this->set_max_speed(STEPPER_SLOW_SPEED);
-    this->move_to(LONG_MAX);
-    while (digitalRead(PIN_MIN_LIMIT) == HIGH)
+    Serial.println("Slowly releasing limit...");
+    set_max_speed(STEPPER_SLOW_SPEED);
+    move_relative(LONG_MAX);
+    while (min_limit->read() == HIGH)
     {
-        this->run();
+        run();
     }
+    delay(500);     //delay to prevent any next motions from occuring too soon
+
 
     //set this position as the zero datum for the slide
-    this->slide_motor.setCurrentPosition(0);
+    slide_motor->setCurrentPosition(0);
 
     //reset the speed back to normal
-    this->set_max_speed(STEPPER_SPEED);
-    Serial.println("Done");
+    set_max_speed(STEPPER_MAX_SPEED);
+    Serial.println("Slide motor calibration complete.");
     return 0;
 }
 
@@ -100,48 +105,83 @@ int SlideModule::calibrate()
 /**
     Command the motor to move to the specified absolute position
 
-    @param long absolute is the position to move to in steps
+    @param long absolute is the absolute position to move to in steps relative to the origin
+    @param (optional) bool block specifies if the robot should return immediately or block while moving. Default is false
 */
-void SlideModule::move_to(long absolute)
+void SlideModule::move_absolute(long absolute, bool block)
 {
-    this->slide_motor.moveTo(absolute);
+    slide_motor->moveTo(absolute);       //command the slide stepper to an absolute target
+    if (block) { wait_till_done(); }    //complete entire motion before returning
 }
 
+/**
+    Command the motor to move to the specified relative position
+
+    @param long relative is the number of steps relative to the current location
+*/
+void SlideModule::move_relative(long relative, bool block)
+{
+    slide_motor->move(relative);         //command the slide stepper to a relative target
+    if (block) { wait_till_done(); }    //complete entire motion before returning
+}
+
+/**
+    Block until the motor has completed moving
+*/
+void SlideModule::wait_till_done()
+{
+    while (slide_motor->isRunning())
+    {
+        slide_motor->run();
+    }
+}
 
 /**
     Immediately stop the motion of the motor
 */
 void SlideModule::stop()
 {
-    this->slide_motor.moveTo(this->slide_motor.currentPosition());              //set the current target to current location
-    this->slide_motor.setCurrentPosition(this->slide_motor.currentPosition());  //(via function side effect) set the motor velocity to zero
+    slide_motor->moveTo(slide_motor->currentPosition());              //set the current target to current location
+    slide_motor->setCurrentPosition(slide_motor->currentPosition());  //(via function side effect) set the motor velocity to zero
 }
 
 
 /**
-    Call once per loop. Perform any current movement for the motor if not touching any limits
+    Call once per loop. Perform any current movement for the motor, and stop the motor if a limit is pressed
+
+    @param bool check is whether or not the limits should be monitored. 
+    true (default) means monitor limits, false means don't monitor 
 */
-void SlideModule::run()
+void SlideModule::run(bool check)
 {
-    this->check_limits();
-    this->slide_motor.run();
+    if (check) { check_limits(); }  //if either of the limit switches are pressed, stop the motor
+    slide_motor->run();              //command motion towards the current target
 }
 
+
+/**
+    Return whether or not the slide is currently moving towards a target
+*/
+bool SlideModule::is_running()
+{
+    return slide_motor->isRunning();
+}
 
 /**
     Check if the slide has pressed either the min or max limit switch. If so, stop the motor
 */
 void SlideModule::check_limits()
 {
-    long distance = this->slide_motor.distanceToGo();
-    if (distance > 0 && digitalRead(PIN_MAX_LIMIT) == HIGH)
+    long distance = slide_motor->distanceToGo();
+    
+    if (distance > 0 && max_limit->read() == HIGH)
     {
-      this->stop();
+      stop();
       Serial.println("Stopping slide at MAX_LIMIT");
     }
-    else if (distance < 0 && digitalRead(PIN_MIN_LIMIT) == HIGH)
+    else if (distance < 0 && min_limit->read() == HIGH)
     {
-        this->stop();
+        stop();
         Serial.println("Stopping slide at MIN_LIMIT");
     }
  

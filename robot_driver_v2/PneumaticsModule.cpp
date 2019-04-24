@@ -18,11 +18,11 @@
 
     @param pin_open uint8_t arduino pin connected to the open side of the pneumatics valve
     @param pin_close uint8_t the arduino pin connected to the close side of the pneumatics valve
-    @param invert_open bool whether or not the open pin should be inverted (i.e. LOW input signal -> 12V output signal). Default is false (un-inverted)
-    @param invert_close bool whether or not the close pin should be inverted (i.e. LOW input signal -> 12V output signal). Default is false (un-inverted)
-    @param init_state bool initial state to set the actuator to. Default is false (closed)
+    @param (optional) invert_open bool whether or not the open pin should be inverted (i.e. LOW input signal -> 12V output signal). Default is false (un-inverted)
+    @param (optional) invert_close bool whether or not the close pin should be inverted (i.e. LOW input signal -> 12V output signal). Default is false (un-inverted)
+    @param (optional) init_state bool initial state to set the actuator to. Default is false (closed)
 */
-PneumaticsModule::PneumaticsModule(uint8_t pin_open, uint8_t pin_close, bool init_state, bool invert_close, bool invert_open)
+PneumaticsModule::PneumaticsModule(uint8_t pin_open, uint8_t pin_close, uint8_t init_state, bool invert_close, bool invert_open)
 {
     //Set up object variables
     this->pin_open = pin_open;
@@ -32,11 +32,11 @@ PneumaticsModule::PneumaticsModule(uint8_t pin_open, uint8_t pin_close, bool ini
     this->state = init_state;
 
     //Initialize the arduino pins
-    pinMode(this->pin_open, OUTPUT);
-    pinMode(this->pin_close, OUTPUT);
+    pinMode(pin_open, OUTPUT);
+    pinMode(pin_close, OUTPUT);
 
     //Set the actuator to the specified intial state
-    this->actuate();
+    actuate();
 }
 
 
@@ -45,8 +45,8 @@ PneumaticsModule::PneumaticsModule(uint8_t pin_open, uint8_t pin_close, bool ini
 */
 void PneumaticsModule::open()
 {
-    this->state = true;
-    this->actuate();    
+    state = HIGH;
+    actuate();    
 }
 
 
@@ -55,8 +55,8 @@ void PneumaticsModule::open()
 */
 void PneumaticsModule::close()
 {
-    this->state = false;
-    this->actuate();
+    state = LOW;
+    actuate();
 }
 
 
@@ -65,8 +65,8 @@ void PneumaticsModule::close()
 */
 void PneumaticsModule::toggle()
 {
-    this->state = !this->state;
-    this->actuate();
+    state = (uint8_t)!state;
+    actuate();
 }
 
 
@@ -75,9 +75,9 @@ void PneumaticsModule::toggle()
 
     @return bool state of the valve. true for open (i.e. pressue applied), and false for closed (i.e. no pressure)
 */
-bool PneumaticsModule::getState()
+uint8_t PneumaticsModule::getState()
 {
-    return this->state;
+    return state;
 }
 
 
@@ -88,7 +88,7 @@ bool PneumaticsModule::getState()
 */
 uint8_t PneumaticsModule::getOpenState()
 {
-    return (uint8_t)(this->state != this->invert_open);
+    return (uint8_t)(state != invert_open);
 }
 
 
@@ -99,7 +99,7 @@ uint8_t PneumaticsModule::getOpenState()
 */
 uint8_t PneumaticsModule::getCloseState()
 {
-    return (uint8_t)(this->state == this->invert_close);
+    return (uint8_t)(state == invert_close);
 }
 
 
@@ -108,8 +108,8 @@ uint8_t PneumaticsModule::getCloseState()
 */
 void PneumaticsModule::actuate()
 {
-    digitalWrite(this->pin_open, this->getOpenState());
-    digitalWrite(this->pin_close, this->getCloseState());
+    digitalWrite(pin_open, getOpenState());
+    digitalWrite(pin_close, getCloseState());
 }
 
 
@@ -121,7 +121,7 @@ void PneumaticsModule::actuate()
 */
 String PneumaticsModule::str()
 {
-    return this->state ? String("Open") : String("Close");
+    return state ? "Open" : "Close";
 }
 
 
@@ -132,5 +132,5 @@ String PneumaticsModule::str()
 */
 String PneumaticsModule::repr()
 {
-    return "Open:[" + String(this->getOpenState()) + "] | Close:[" + String(this->getCloseState()) + "]";
+    return "Open:[" + String(getOpenState()) + "] | Close:[" + String(getCloseState()) + "]";
 }

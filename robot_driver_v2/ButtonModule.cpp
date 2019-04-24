@@ -15,7 +15,7 @@
     Construct a new button object
 
     @param uint8_t pin is the pin sensing the button state
-    @param bool invert is whether or not the output should be inverted from the sensed reading
+    @param (optional) bool invert is whether or not the output should be inverted from the sensed reading. Default is false
 */
 ButtonModule::ButtonModule(uint8_t pin, bool invert)
 {
@@ -24,12 +24,12 @@ ButtonModule::ButtonModule(uint8_t pin, bool invert)
     this->invert = invert;
 
     //activate the sensor pin
-    pinMode(this->pin, INPUT_PULLUP);
+    pinMode(pin, INPUT_PULLUP);
 
     //zero the sensor buffer
     for (int i = 0; i < BUFFER_LENGTH; i++)
     {
-        this->state_buffer[i] = 0;
+        state_buffer[i] = 0;
     }
 }
 
@@ -41,26 +41,25 @@ ButtonModule::ButtonModule(uint8_t pin, bool invert)
 */
 uint8_t ButtonModule::read()
 {
-    this->state_buffer[this->tail] = digitalRead(this->pin);  //take a measurement and store into the buffer
-    this->tail++;                                             //increment the tail pointer
-    this->tail %= BUFFER_LENGTH;                              //loop the location of the buffer tail if it goes past the end of the buffer
+    state_buffer[tail++%BUFFER_LENGTH] = digitalRead(pin);  //take a measurement and store into the buffer (increment the tail pointer and read mod BUFFER_LENGTH)
 
     //determine the fraction of readings that are high
     float fraction = 0;
     for (int i = 0; i < BUFFER_LENGTH; i++)
     {
-        fraction += this->state_buffer[i];
+        fraction += state_buffer[i];        //sum up the states in the buffer
     }
-    fraction /= BUFFER_LENGTH;
+    fraction /= BUFFER_LENGTH;              //take the average
 
-    //return HIGH if enough readings were HIGH (or LOW if inverted) and vice versa
-    if (fraction >= ACTIVATION_THRESHOLD)    //are more readings HIGH than threshold?
+
+    //return the state of the button
+    if (fraction >= ACTIVATION_THRESHOLD)   //are more readings HIGH than threshold?
     {
-        return this->invert ? LOW : HIGH;   //return HIGH, unless inverted
+        return invert ? LOW : HIGH;         //return HIGH, unless inverted
     }
     else
     {
-        return this->invert ? HIGH : LOW;   //return LOW, unless inverted
+        return invert ? HIGH : LOW;         //return LOW, unless inverted
     }
 }
 
@@ -72,5 +71,5 @@ uint8_t ButtonModule::read()
 */
 String ButtonModule::str()
 {
-    return this->read() ? "HIGH" : "LOW";
+    return read() ? "HIGH" : "LOW";
 }
