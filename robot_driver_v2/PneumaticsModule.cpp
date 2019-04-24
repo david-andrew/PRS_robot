@@ -75,7 +75,7 @@ void PneumaticsModule::toggle()
 
     @return bool state of the valve. true for open (i.e. pressue applied), and false for closed (i.e. no pressure)
 */
-uint8_t PneumaticsModule::getState()
+uint8_t PneumaticsModule::get_state()
 {
     return state;
 }
