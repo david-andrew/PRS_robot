@@ -1,3 +1,19 @@
+/**
+    PRS Fret Press Robot
+    RobotDriver.ino
+    Purpose: Main driver program for running the robot
+
+    @author David Samson
+    @version 1.0
+    @date 2019-04-26
+*/
+
+
+
+
+
+
+
 #include "SlideModule.h"
 #include "LaserModule.h"
 
