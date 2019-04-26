@@ -9,8 +9,8 @@
 */
 
 #include "SlideModule.h"
-#include "ButtonModule.h"
-#include <Arduino.h>
+// #include "ButtonModule.h"
+// #include <Arduino.h>
 #include <limits.h>
 
 
@@ -20,9 +20,9 @@
 SlideModule::SlideModule()
 {
     //initialize the AccelStepper object for the slide motor
-    this->slide_motor = new AccelStepper(AccelStepper::DRIVER, 3, 2);
-    this->set_max_speed(STEPPER_MAX_SPEED);
-    this->set_acceleration(STEPPER_ACCELERATION);
+    slide_motor = new AccelStepper(AccelStepper::DRIVER, PIN_SLIDE_PULSE, PIN_SLIDE_DIRECTION);
+    set_max_speed(STEPPER_MAX_SPEED);
+    set_acceleration(STEPPER_ACCELERATION);
 
     //initialize the limit switches for the motor
     min_limit = new ButtonModule(PIN_MIN_LIMIT);
