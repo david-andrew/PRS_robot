@@ -7,6 +7,8 @@ This code is used to control the Fret Press Robot developed by JHU Senior Design
 2. Wait for all components to stop moving (calibration process)
 3. Place blank fretboard on the slide, and clamp in place
 4. Press both start buttons simultaneously
+5. Wait for robot to press all frets and return slide to start position
+7. Repeat from step 3 to press a new board
 
 
 ## Example Debug Usage

@@ -15,13 +15,17 @@
 #include "PneumaticsModule.h"
 #include "SlideModule.h"
 #include "LaserModule.h"
-
+#include "GlueModule.h"
+#include "PressModule.h"
+#include "Utilities.h"
 
 #define LASER_ALIGNMENT_OFFSET -45      //number of steps offset from slot positions to the laser axis location
 #define GLUE_ALIGNMENT_OFFSET 1500      //number of steps offset from slot positions to the glue needle location
 #define PRESS_ALIGNMENT_OFFSET 15000    //number of steps offset from slot positions to the press arm location
 
+/**
 
+*/
 class Robot
 {
 public:
