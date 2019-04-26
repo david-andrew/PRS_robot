@@ -77,6 +77,17 @@ int LaserModule::calibrate()
 
 
 /**
+    Turn the laser emitter on or off
+
+    @param uint8_t state is the desired state of the laser. HIGH for on and LOW for off.
+*/
+void LaserModule::write(uint8_t state)
+{
+    digitalWrite(PIN_EMITTER, state);
+}
+
+
+/**
     Return the list of slot positions
 
     @return long* slot_buffer is the list of locations that each fret slot was detected.
@@ -182,9 +193,6 @@ void LaserModule::detect_slots(bool print)
                 state = WAIT_START;
                 trigger_index = index;
                 end_of_board = true;    //stop detecting new slots in the fretboard
-
-                //add the calibration offset to each slot position
-                for (int i = 0; i < num_slots; i++){ slot_buffer[i] += ALIGNMENT_OFFSET }
             }
         }
         break;

@@ -63,6 +63,7 @@ public:
     LaserModule(AccelStepper* slide_motor);
 
     int calibrate();                        //calibrate the laser module. return status of calibration
+    void write(uint8_t state);              //turn the laser on or off
     long* get_slot_buffer();                //return a pointer to the array of detected slots 
     int get_num_slots();                    //return the number of slots detected (i.e. length of get_slot_positions() array)
     void plot_sensor_response();            //plot the current response of the laser signal (for serial plotter)

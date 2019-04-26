@@ -17,40 +17,45 @@
 #include "LaserModule.h"
 
 
-
+#define LASER_ALIGNMENT_OFFSET -45      //number of steps offset from slot positions to the laser axis location
+#define GLUE_ALIGNMENT_OFFSET 1500      //number of steps offset from slot positions to the glue needle location
+#define PRESS_ALIGNMENT_OFFSET 15000    //number of steps offset from slot positions to the press arm location
 
 
 class Robot
 {
 public:
-    Robot();                    //constructor for the PRS Guitar Fret Press Robot
-    void calibrate();           //run all calibration process for the robot
-    void detect_slots();        //detect the locations of all frets
-    void press_frets();         //glue and press frets into each slot
-    void reset();               //reset the state of the robot for the next fret board
+    Robot();                            //constructor for the PRS Guitar Fret Press Robot
+    void calibrate();                   //run all calibration process for the robot
+    void detect_slots();                //detect the locations of all frets
+    void press_frets();                 //glue and press frets into each slot
+    void reset();                       //reset the state of the robot for the next fret board
 
-    String str();               //get a string for the state of the robot
-    String repr();              //get a string of the underlying representation of the robot
+    String str();                       //get a string for the state of the robot
+    String repr();                      //get a string of the underlying representation of the robot
 
 private:
-    //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
-    PneumaticsModule* glue_pneumatics; //apparently these can't be null? instantiate them in the header then?
-    PneumaticsModule* press_pneumatics;
-    PneumaticsModule* snip_pneumatics;
+    // PneumaticsModule* glue_pneumatics;  //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
+    // PneumaticsModule* press_pneumatics; //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
+    // PneumaticsModule* snip_pneumatics;  //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
+
     
-    SlideModule* slide_module;  //Module to control the slide stepper motor
-    LaserModule* laser_module;  //Module to control the laser fret sensor system
+    SlideModule* slide_module;          //Module to control the slide stepper motor
+    LaserModule* laser_module;          //Module to control the laser fret sensor system
+    // GlueModule* glue_module;            //Module to control the glue application system
+    // PressModule* press_module;          //Module to control the fret feed and press system
 
-    enum robot_states
-    {
-        CALIBRATING,            //calibrating all components that need calibration (i.e. steppers and laser)
-        WAIT_START,             //after calibration, allow the operator to load a fretboard and press go
-        FINDING_SLOTS,          //while detecting all slots on the robot
-        PRESSING_SLOTS,         //while gluing and pressing into all slots on the robot
+    // Utility* utilities;                 //module for controlling misc functionality, (e.g. serial control, warning indication, error correction, etc.)
 
-    };
+    // enum robot_states
+    // {
+    //     CALIBRATING,                    //calibrating all components that need calibration (i.e. steppers and laser)
+    //     WAIT_START,                     //after calibration, allow the operator to load a fretboard and press go
+    //     FINDING_SLOTS,                  //while detecting all slots on the robot
+    //     PRESSING_SLOTS,                 //while gluing and pressing into all slots on the robot
+    // };
 
-    robot_states state = CALIBRATING;
+    // robot_states state = CALIBRATING;
     long* slot_buffer;          //handle to the list of slot positions
     int num_slots;              //number of slots detected
 };

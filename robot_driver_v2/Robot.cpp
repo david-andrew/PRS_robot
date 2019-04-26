@@ -20,10 +20,10 @@
 */
 Robot::Robot()
 {
-	//Set up Pneumatics on robot PROBABLY TO BE MOVED TO SPECIFIC MODULES
-	glue_pneumatics = new PneumaticsModule(7, 6, false);                 //start unpressurized.
-	press_pneumatics = new PneumaticsModule(11, 10, true);               //start pressurized
-	snip_pneumatics = new PneumaticsModule(12, 13, false, true, false);  //start unpressurized. invert open pin
+	// //Set up Pneumatics on robot PROBABLY TO BE MOVED TO SPECIFIC MODULES
+	// glue_pneumatics = new PneumaticsModule(7, 6, false);                 //start unpressurized.
+	// press_pneumatics = new PneumaticsModule(11, 10, true);               //start pressurized
+	// snip_pneumatics = new PneumaticsModule(12, 13, false, true, false);  //start unpressurized. invert open pin
 	
 	slide_module = new SlideModule();
 	laser_module = new LaserModule(slide_module->get_stepper_reference());
@@ -66,7 +66,8 @@ void Robot::press_frets()
 {
 	for (int i = 0; i < num_slots; i++)
 	{
-		slide_module->move_absolute(slot_buffer[i], true);
+		long target = slot_buffer[i] + LASER_ALIGNMENT_OFFSET;
+		slide_module->move_absolute(target, true);
 		//perform glue/press actions
 		delay(1000);
 	}

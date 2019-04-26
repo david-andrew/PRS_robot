@@ -44,7 +44,7 @@ public:
     void close();               //close the pneumatics actuator (i.e. release pressure)
     void toggle();              //toggle the current state of the actuator
     uint8_t get_state();        //get the current state of the actuator. true for open, false for closed
-    
+
     String str();               //get a string for whether or not the acutator is "Open" or "Close"
     String repr();              //get a string for the underlying pin representation of the actuator
 
