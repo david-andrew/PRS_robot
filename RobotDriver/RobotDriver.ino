@@ -9,17 +9,18 @@
 */
 
 #include "Robot.h"
-//#include "Utilities.h"
 
 //declare robot and utils objects
-Robot* robot = new Robot();
-Utilities* utils = new Utilities(robot->laser_module, robot->slide_module, robot->glue_module, robot->press_module);
-
-long distance = 1000000000;
+Robot* robot;
+Utilities* utils;
+long distance;
 
 void setup()
 {
   Serial.begin(115200);
+  robot = new Robot();
+  utils = new Utilities(robot->laser_module, robot->slide_module, robot->glue_module, robot->press_module);
+  distance = 1000000000;
 //  robot->slide_module->calibrate();
 //  robot->laser_module->calibrate();
 //  delay(1000);
