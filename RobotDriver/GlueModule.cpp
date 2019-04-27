@@ -21,7 +21,7 @@ GlueModule::GlueModule()
 	set_acceleration(STEPPER_ACCELERATION);
 
 	//initilize the pneumatics to control the glue stream
-	PneumaticsModule glue_pneumatics = new PneumaticsModule(PIN_GLUE_OPEN, PIN_GLUE_CLOSE, GLUE_DEFAULT);
+	glue_pneumatics = new PneumaticsModule(PIN_GLUE_OPEN, PIN_GLUE_CLOSE, GLUE_DEFAULT);
 
 	//initialize the limit switches for the motor
     min_limit = new ButtonModule(PIN_MIN_LIMIT);

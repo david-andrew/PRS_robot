@@ -9,8 +9,6 @@
 */
 
 #include "LaserModule.h"
-#include <Arduino.h>
-
 
 int AMBIENT_RESPONSE;     //Declare global ambient (i.e. no laser) response of the laser sensor
 int ACTIVE_RESPONSE;      //Declare global active (i.e. laser on) response of the laser sensor 
@@ -21,9 +19,9 @@ int ACTIVE_RESPONSE;      //Declare global active (i.e. laser on) response of th
 
     @param AccelStepper* slide_motor is a reference to the slide motor object managed by the SlideModule class
 */
-LaserModule::LaserModule(AccelStepper* slide_motor)
+LaserModule::LaserModule(SlideModule* slide_module)
 {
-    this->slide_motor = slide_motor;    //save the reference to the stepper object
+    this->slide_module = slide_module;    //save the reference to the stepper object
     
     //define the inital values for the ambient response variables. will be redefined during calibration
     AMBIENT_RESPONSE = 40;
@@ -132,10 +130,9 @@ void LaserModule::detect_slots(bool print)
 {
     if (end_of_board) { return; } //only detect slots if it is not the end of the board
 
-    response = analogRead(PIN_SENSOR) - AMBIENT_RESPONSE;   //get the current laser reading
-    long index = slide_motor->currentPosition();      //current position of the slide motor
+    response = analogRead(PIN_SENSOR) - AMBIENT_RESPONSE;       //get the current laser reading
+    long index = slide_module->motor->get_current_position();   //current position of the slide motor
   
-
     switch (state)
     {
         case WAIT_START:    //currently don't sense the fret board. wait till it starts to pass in front of the sensor

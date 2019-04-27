@@ -9,35 +9,19 @@
 */
 
 
-
-
-
-
-
 #include "SlideModule.h"
 #include "LaserModule.h"
 
-SlideModule slide = SlideModule();      //create a slide module for the laser to reference
-LaserModule laser = LaserModule(slide.get_stepper_reference());
+SlideModule* slide = new SlideModule();      //create a slide module for the laser to reference
+LaserModule* laser = new LaserModule(slide);
     
 
 void setup()
 {
 //    laser.calibrate();
   Serial.begin(115200);
-///  pinMode(53, OUTPUT);
-///  digitalWrite(53, HIGH);
   int t = 1000;
-  laser.write(LOW);
-//  for (int i = 0; i < 10; i++)
-//  {
-//    Serial.println("Turning Laser ON");
-//    laser.write(HIGH);
-//    delay(t);
-//    Serial.println("Turning Laser OFF");
-//    laser.write(LOW);
-//    delay(t);
-//  }
+  laser->write(LOW);
   
 }
 void loop(){}

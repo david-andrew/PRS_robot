@@ -12,7 +12,7 @@
 #define LASER_MODULE_H
 
 #include <Arduino.h>
-#include <AccelStepper.h>
+#include "SlideModule.h"
 
 #define PIN_EMITTER 53              //pin for controlling the laser diode
 #define PIN_SENSOR A15              //pin for sensing the laser beam
@@ -60,7 +60,7 @@ class LaserModule
 {
 public:
     //constructor for the Laser Fret Detector system. Requires reference to the slide stepper motor object
-    LaserModule(AccelStepper* slide_motor);
+    LaserModule(SlideModule* slide_module);
 
     int calibrate();                        //calibrate the laser module. return status of calibration
     void write(uint8_t state);              //turn the laser on or off
@@ -79,7 +79,7 @@ private:
     int peak_response = 0;                  //for finding the maximum/peak in a sequence of sensor readings
     long peak_index = 0;                    //index at which a peak was detected
     long trigger_index = 0;                 //index that the most recent trigger was activated
-    AccelStepper* slide_motor;              //reference to the slide stepper motor, used to get current step positions
+    SlideModule* slide_module;              //reference to the slide stepper motor, used to get current step positions
 
     int num_slots = 0;                      //current count for number of slots detected by the sensor
     long slot_buffer[MAX_SLOTS];            //buffer holding the step position of each slot in memory

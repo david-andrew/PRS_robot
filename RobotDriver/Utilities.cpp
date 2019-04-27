@@ -36,7 +36,7 @@ Utilities::Utilities(LaserModule* laser_module, SlideModule* slide_module, GlueM
 /**
     Control components on the robot based on the input serial command
 */
-void Utilities::serial_control
+void Utilities::serial_control()
 {
     if (read_serial())          //attempt to get a command from Serial. If command is available, then
     {
@@ -63,12 +63,39 @@ void Utilities::serial_control
 
 
 /**
+    Simple test program to plot the current laser sensor reading
+*/
+void Utilities::test_laser()
+{
+
+}
+
+
+/**
+    Simple test program to plot the current IR sensor reading
+*/
+void Utilities::test_IR()
+{
+    
+}
+
+
+/**
+    Test program to detect slots on a fret board
+*/
+void Utilities::test_detect_slots()
+{
+
+}
+
+
+/**
     Store serial input into a buffer.
 
     @return bool available indicates whether or not a command was read. 
     true if command was read, false if no command available
 */
-int Utilities::read_serial()
+bool Utilities::read_serial()
 {
     
     if (!Serial.available())

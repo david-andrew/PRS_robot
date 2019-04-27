@@ -125,6 +125,9 @@ public:
     Utilities(LaserModule* laser, SlideModule* slide, GlueModule* glue, PressModule* press);
 
     void serial_control();                      //control the robot via serial commands
+    void test_laser();                          //simple program that plots laser sensor readings
+    void test_IR();                             //simple program that plots IR sensor readings
+    void test_detect_slots();                   //program to test laser detection of slots
 
 private:
     char command_buffer[COMMAND_BUFFER_LENGTH]; //buffer for holding serial commands

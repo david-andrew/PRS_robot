@@ -32,11 +32,14 @@ class StepperModule
 {
 public:
     //constructor for the stepper motor module, given pins for the motor and limit switches
-    StepperModule(uint8_t pin_pulse, uint8_t pin_direction, uint8_t pin_min_limit, uint8_t pin_max_limit, String name);
+    StepperModule(uint8_t pin_pulse, uint8_t pin_direction, uint8_t pin_min_limit, uint8_t pin_max_limit, String name, bool reverse = false);
     
-    AccelStepper* get_reference();                          //return a reference to the raw stepper AccelStepper object
+    int calibrate();                                        //drive the motor to the minimum limit and set the position to 0
     void set_current_position(long position);               //update the current position of the stepper motor
     long get_current_position();                            //get the current position of the stepper motor
+    void set_speed(float speed);                            //set the current speed of the stepper motor (in steps/second)
+    void set_acceleration(float acceleration);              //set the maximum acceleration of the motor
+    void set_speeds(float min, float med, float max);       //set the minimum, medium and maximum speeds for the stepper motor                          
     void move_relative(long relative, bool block=false);    //move the slide motor relatively by the specified number (in steps)
     void move_absolute(long absolute, bool block=false);    //move the slide motor to the absolute position (in steps)
     long get_distance();                                    //return the distance to the currently targeted location
@@ -44,8 +47,8 @@ public:
     void run(bool check=true);                              //NEEDS TO BE CALLED ONCE PER LOOP(). Run the motor to any specified positions and (if check=true) monitor limit switches
     bool is_running();                                      //return whether or not the motor is currently moving to a target.
 
-    String str();
-    String repr();
+    String str();                                           //print out the current state of the stepper motor
+    String repr();                                          //print out the underlying representation of the stepper motor
 
 private:
     AccelStepper* motor;                                    //AccelStepper object for controlling the stepper motor
@@ -53,8 +56,10 @@ private:
     ButtonModule* max_limit;                                //ButtonModule object for reading the maximum limit switch
     String name;                                            //name of this motor
 
-    void set_max_speed(float speed);                        //set the maximum speed of the motor
-    void set_acceleration(float acceleration);              //set the maximum acceleration of the motor
+    float STEPPER_MINIMUM_SPEED = 50;                       //minimum speed to drive the stepper motor at. This is used as the precise dviving speed (while releasing limits during calibration)
+    float STEPPER_MEDIUM_SPEED = 1000;                      //medium speed to drive the stepper motor at. This is used as the cautious driving speed (while searching for limits during calibration)
+    float STEPPER_MAXIMUM_SPEED = 4000;                     //maximum speed to drive the stepper motor at. This is used as the normal driving speed
+
     void wait_till_done();                                  //block until the motor has reached it's current target or pressed a limit
     void check_limits();                                    //check if the motor is within bounds
 };

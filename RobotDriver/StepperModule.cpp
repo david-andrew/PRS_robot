@@ -9,6 +9,7 @@
 */
 
 #include "StepperModule.h"
+#include <limits.h>
 
 /**
 	Constructor for stepper module
@@ -17,41 +18,80 @@
 	@param uint8_t pin_direction is the pin connected to direction on the stepper motor driver
 	@param uint8_t pin_min_limit is the pin connected to the minimum limit switch for this motor
 	@param uint8_t pin_max_limit is the pin connected to the maximum limit switch for this motor
+	@param String name is the name of the stepper motor, e.g. "slide", "glue", or "press".
+	@param (optional) bool reverse indicates whether the motor should spin in reverse. Default is false
 */
-StepperModule::StepperModule(uint8_t pin_pulse, uint8_t pin_direction, uint8_t pin_min_limit, uint8_t pin_max_limit, String name)
+StepperModule::StepperModule(uint8_t pin_pulse, uint8_t pin_direction, uint8_t pin_min_limit, uint8_t pin_max_limit, String name, bool reverse)
 {
-	//create new stepper motor object
+	//create new stepper motor object, and set the speed to the default
 	motor = new AccelStepper(AccelStepper::DRIVER, pin_pulse, pin_direction);
+	set_speed(STEPPER_MAXIMUM_SPEED);
 
 	//initialize limit switches for the motor
 	min_limit = new ButtonModule(pin_min_limit);
 	max_limit = new ButtonModule(pin_max_limit);
 
 	//set the name of this stepper motor. Should be either "slide", "glue", or "press"
-	this->name = name;
+	this->name = String(name);
+
+	//reverse the direction of the stepper motor if specified
+	motor->setPinsInverted(reverse);
+	
 }
 
 
 /**
-    return a reference to the AccelStepper object. Used by the laser sensor for tracking slide motor position
+    Move the motor to the minimum limit, and set position to zero
 
-    @return AccelStepper* motor is a reference to the stepper motor object
+    @return int flag for success for failure. 0 for success, 1 for failure
 */
-AccelStepper* StepperModule::get_reference()
+int StepperModule::calibrate()
 {
-    return motor;
+    //slide the motor back until it presses the button
+    Serial.println("Calibrating " + name + " motor:");
+    Serial.println("Finding minimum limit...");
+    set_speed(STEPPER_MEDIUM_SPEED);
+    move_relative(LONG_MIN);
+    while (is_running())
+    {
+        run();
+    }
+    if (min_limit->read() == LOW || max_limit->read() == HIGH) 
+	{
+	 	return 1; 	//error, min limit never reached, or pressed max limit 
+ 	}
+    delay(500);     //delay to stop momentum
+
+    //slowly slide the motor forward until the button is released
+    Serial.println("Slowly releasing limit...");
+    set_speed(STEPPER_MINIMUM_SPEED);
+    move_relative(LONG_MAX);
+    while (min_limit->read() == HIGH)
+    {
+        run();
+    }
+    stop();
+    delay(500);     //delay to prevent any next motions from occuring too soon
+
+
+    //set this position as the zero datum for the slide
+    set_current_position(0);
+
+    //reset the speed back to normal
+    set_speed(STEPPER_MAXIMUM_SPEED);
+    Serial.println(name + " motor calibration complete.");
+    return 0;
 }
 
+// /**
+//     Set the maximum speed of the stepper motor
 
-/**
-    Set the maximum speed of the stepper motor
-
-    @param float speed is the maximum speed of the stepper motor in steps/second
-*/
-void StepperModule::set_max_speed(float speed)
-{
-    motor->setMaxSpeed(speed);
-}
+//     @param float speed is the maximum speed of the stepper motor in steps/second
+// */
+// void StepperModule::set_max_speed(float speed)
+// {
+//     motor->setMaxSpeed(speed);
+// }
 
 
 /**
@@ -84,6 +124,35 @@ long StepperModule::get_current_position()
 {
 	return motor->currentPosition();
 }
+
+
+/**
+	Set the current speed of the stepper motor
+
+	@param float speed is the new speed the stepper motor will move at
+*/
+void StepperModule::set_speed(float speed)
+{
+	motor->setMaxSpeed(speed);
+}
+
+
+/**
+	Set the minimum, medium, and max speed of the stepper motor (used for calibration).
+	Additionally sets the current speed to the maximum specified
+
+	@param float min is the minimum speed the stepper motor will move at
+	@param float med is a medium speed the stepper motor will move at
+	@param float max is the maximum speed the stepper motor will move at
+*/
+void StepperModule::set_speeds(float min, float med, float max)
+{
+	STEPPER_MINIMUM_SPEED = min;
+	STEPPER_MEDIUM_SPEED = med;
+	STEPPER_MAXIMUM_SPEED = max;
+	set_speed(STEPPER_MAXIMUM_SPEED);
+}
+
 
 
 /**
@@ -176,12 +245,12 @@ void StepperModule::check_limits()
     if (distance > 0 && max_limit->read() == HIGH)
     {
   		stop();
-      	Serial.println("Stopping " + name + " at MAX_LIMIT");
+      	Serial.println("Stopping " + name + " motor at MAX_LIMIT");
     }
     else if (distance < 0 && min_limit->read() == HIGH)
     {
         stop();
-        Serial.println("Stopping " + name + " at MIN_LIMIT");
+        Serial.println("Stopping " + name + " motor at MIN_LIMIT");
     }
 }
 

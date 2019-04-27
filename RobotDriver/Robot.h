@@ -46,8 +46,8 @@ private:
     
     SlideModule* slide_module;          //Module to control the slide stepper motor
     LaserModule* laser_module;          //Module to control the laser fret sensor system
-    // GlueModule* glue_module;            //Module to control the glue application system
-    // PressModule* press_module;          //Module to control the fret feed and press system
+    GlueModule* glue_module;            //Module to control the glue application system
+    PressModule* press_module;          //Module to control the fret feed and press system
 
     // Utility* utilities;                 //module for controlling misc functionality, (e.g. serial control, warning indication, error correction, etc.)
 
