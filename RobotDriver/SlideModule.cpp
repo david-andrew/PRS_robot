@@ -9,7 +9,6 @@
 */
 
 #include "SlideModule.h"
-#include <limits.h>
 
 
 /**
@@ -17,13 +16,12 @@
 */
 SlideModule::SlideModule()
 {
-    //initialize the AccelStepper object for the slide motor
-    slide_motor = new StepperModule(PIN_SLIDE_PULSE, PIN_SLIDE_DIRECTION, PIN_SLIDE_MIN_LIMIT, PIN_SLIDE_MAX_LIMIT, "slide");
-    slide_motor->set_speeds(SLIDE_MINIMUM_SPEED, SLIDE_MEDIUM_SPEED, SLIDE_MAXIMUM_SPEED);
-    slide_motor->set_acceleration(SLIDE_ACCELERATION);
-
-    //set up read-only reference to StepperModule object
-    motor = slide_motor;
+    //initialize the StepperModule object for the slide motor (read-only public reference)
+    motor = new StepperModule(PIN_SLIDE_PULSE, PIN_SLIDE_DIRECTION, PIN_SLIDE_MIN_LIMIT, PIN_SLIDE_MAX_LIMIT, "slide");
+    
+    //set motor speeds and accelerations
+    motor->set_speeds(SLIDE_MINIMUM_SPEED, SLIDE_MEDIUM_SPEED, SLIDE_MAXIMUM_SPEED);
+    motor->set_acceleration(SLIDE_ACCELERATION);
 }
 
 
@@ -34,7 +32,7 @@ SlideModule::SlideModule()
 */
 int SlideModule::calibrate()
 {
-    return slide_motor->calibrate();
+    return motor->calibrate();
 }
 
 
@@ -44,9 +42,9 @@ int SlideModule::calibrate()
 void SlideModule::reset()
 {
     //command the slide to the origin and wait for it to stop moving
-    slide_motor->move_absolute(0);
-    while (slide_motor->is_running())
+    motor->move_absolute(0);
+    while (motor->is_running())
     {
-        slide_motor->run();
+        motor->run();
     }
 }

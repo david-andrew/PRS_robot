@@ -65,13 +65,11 @@ public:
     String str();                                           //get a string describing the current state of the slide module
     String repr();                                          //get a string with the underlying representation of the slide module
 
-    const StepperModule* motor;                             //public read-only reference to the StepperModule for use by other modoules
+    const StepperModule* motor;                             //public read-only reference to the StepperModule for use by other modules
 
 
 private:
-    ButtonModule* min_limit;                                //ButtonModule object for reading the minimum limit switch
-    ButtonModule* max_limit;                                //ButtonModule object for reading the maximum limit switch
-    StepperModule* slide_motor;                             //StepperModule object for controlling the slide stepper motor
+    // StepperModule* slide_motor;                             //internal StepperModule object for controlling the slide stepper motor
 
 };
 

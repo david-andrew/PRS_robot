@@ -20,8 +20,8 @@
 #include "Utilities.h"
 
 #define LASER_ALIGNMENT_OFFSET -85      //number of steps offset from slot positions to the laser axis location
-#define GLUE_ALIGNMENT_OFFSET 4390      //number of steps offset from slot positions to the glue needle location
-#define PRESS_ALIGNMENT_OFFSET 13440    //number of steps offset from slot positions to the press arm location
+#define GLUE_ALIGNMENT_OFFSET 4395      //number of steps offset from slot positions to the glue needle location
+#define PRESS_ALIGNMENT_OFFSET 13447    //number of steps offset from slot positions to the press arm location
 
 /**
 

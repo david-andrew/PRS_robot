@@ -71,8 +71,13 @@ int LaserModule::calibrate()
     digitalWrite(PIN_EMITTER, LOW);
 
     //confirm that laser can see the sensor (i.e. high_response was much larger than low_response)
-    if (high_response - low_response < VISIBLE_THRESHOLD) { return 1; }  //failed to sense the laser properly
-
+    if (high_response - low_response < VISIBLE_THRESHOLD) 
+    {
+        //failed to sense the laser properly
+        Serial.println("Error: Laser calibration failed! Laser is either misaligned or obsructed.");
+        return 1; 
+    }
+    
     //set the nominal ambient/active response values for the laser
     AMBIENT_RESPONSE = low_response;
     ACTIVE_RESPONSE = high_response;
