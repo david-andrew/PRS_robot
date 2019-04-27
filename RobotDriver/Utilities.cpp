@@ -10,7 +10,7 @@
 
 #include "Utilities.h"
 #include "Robot.h"         //for fret slot alignment offsets
-#include <Arduino.h>
+#include <limits.h>
 
 /**
     Constructor for the utilities class. Takes references to all top level modules on robot.
@@ -47,6 +47,8 @@ void Utilities::serial_control()
         else
         {
             char device = command_buffer[0];
+            // Serial.println("Device \"" + String(device) + "\"");
+
             switch (device)
             {
                 case 's': slide_command();  break;
@@ -67,7 +69,8 @@ void Utilities::serial_control()
 */
 void Utilities::test_laser()
 {
-
+    laser_module->write(HIGH);
+    while (true) laser_module->plot_sensor_response();
 }
 
 
@@ -76,7 +79,7 @@ void Utilities::test_laser()
 */
 void Utilities::test_IR()
 {
-    
+    while (true) glue_module->plot_sensor_response();
 }
 
 
@@ -103,17 +106,40 @@ bool Utilities::read_serial()
         return false;
     }
 
-    while (Serial.available() > 0)                          //if characters are available
+    while (true)                                                //while not the end of the input stream (break inside when end detected)
     {
-        char next_char = Serial.read();                     //get the next character
-        if (next_char != '\n')                              //newline indicates end of command
+        if (Serial.available() > 0)                             //if characters are available
         {
-            command_buffer[buffer_index++] = next_char;     //store in the serial buffer
+            char next_char = Serial.read();                     //get the next character
+            if (next_char != '\n')                              //newline indicates end of command
+            {
+                command_buffer[buffer_index++] = next_char;     //store in the serial buffer
+            }
+            else
+            {
+                break;                                          //exit loop at end of input stream
+            }
         }
     }
-    return true;                                            //if buffer_length is > 0, a command was read
+    return true;                                                //indicate that a command was read
 }
 
+
+/**
+    Return any numbers at the end of the buffer
+
+    @param int i is the index to start looking for the number
+    @return long number is the number from the buffer
+*/
+long Utilities::get_buffer_num(int i)
+{
+    String s = "";
+    while (command_buffer[i] != 0)
+    {
+        s += command_buffer[i++];
+    }
+    return atol(s.c_str()); //convert the string to a long
+}
 
 
 /**
@@ -121,8 +147,18 @@ bool Utilities::read_serial()
 */
 void Utilities::kill_command()
 {
-    //perform all kill steps
+    //stop all motors from moving
+    slide_module->motor->stop();
+    // glue_module->motor->stop();
+    // press_module->motor->stop();
+
+    // //set all pneumatics to default state
+    // glue_module->glue->write(LOW);
+    // press_module->press->write(HIGH);
+    // press_module->snips->write(LOW);
+
 }
+
 
 /**
     Handle commands for the slide motor module
@@ -130,39 +166,68 @@ void Utilities::kill_command()
 void Utilities::slide_command()
 {
     char action = command_buffer[1];
+    // Serial.println("Action \"" + String(action) + "\"");
     switch (action)
     {
+        case 'c':   //slide "calibrate" - move the slide motor to the min limit and set position to zero
+        {
+            slide_module->calibrate();
+            break;
+        }
         case 'm':   //slide "move" - move the slide motor relative to current position
         {   
-            //get long value
-            //relative move
+            long relative = get_buffer_num(2);                      //get the specified target to move to
+            slide_module->motor->move_relative(relative, true);     //command the motor to move
+            
             break;
         }
         case 'a':   //slide "absolute" - move the slide motor to an absolute position
         {
-            //get long value
-            //absolute move
+            long absolute = get_buffer_num(2);                      //get the specified target to move to
+            slide_module->motor->move_absolute(absolute, true);     //command the motor to move
+            // Serial.println("Moving slide motor to absolute position " + String(absolute));
             break;
         }
         case 's':   //slide "stop" - stop the motion of the slide motor
         {
-            //send stop command to slide motor
+            slide_module->motor->stop();                    //send stop command to slide motor
             break;
         }
         case 't':   //slide "target" - align the specified slot with the targeted device
         {
-            long offset;
-            char target = command_buffer[3];
-            switch (target)
+            long offset;                        //offset for slot alignment
+            char target = command_buffer[2];    //device to target (laser, glue, or press)
+            int num_slots = laser_module->get_num_slots();          //get the current number of slots
+            long* slot_buffer = laser_module->get_slot_buffer();    //get the list of slot indices
+
+            switch (target) //save the step offset for the specific target
             {
                 case 'l': offset = LASER_ALIGNMENT_OFFSET;  break;
                 case 'g': offset = GLUE_ALIGNMENT_OFFSET;   break;
                 case 'p': offset = PRESS_ALIGNMENT_OFFSET;  break;
-                default: Serial.println();
+                default: Serial.println("Error: unknown target code \"" + String(target) + "\"");
             }
-            //get the index from the buffer
-            //get the coordinates from the LaserModule + offset
-            //move to the index slot with the SlideModule
+
+            int index = (int) get_buffer_num(3);                    //get the target index from the buffer
+            if (index >= 0)                                         //confirm the index is positive (i.e. target only a single slot) 
+            {
+                if (index > num_slots)                              //confirm the index refers to a real slot
+                {
+                    Serial.println("Error: Specified slot index \"" + String(index) + "\" is larger than max slot index " + String(num_slots - 1));
+                }
+                else
+                {
+                    slide_module->motor->move_absolute(slot_buffer[index] + offset, true);
+                }
+            }
+            else                                                    //negative index means target all slots
+            {
+                for (int i = 0; i < num_slots; i++)
+                {
+                    slide_module->motor->move_absolute(slot_buffer[i] + offset, true);
+                    delay(1000);
+                }
+            }
             break;
         }
         default: Serial.println("Unrecognized command for slide: \"" + String(action) + "\"");
@@ -285,16 +350,42 @@ void Utilities::laser_command()
     char action = command_buffer[1];
     switch (action)
     {
+        case 'c':   //laser "calibrate" - calibrate the laser sensor
+        {
+            laser_module->calibrate();
+            break;
+        }
         case 't':   //laser "toggle" - toggle the laser emitter on/off 
         {
+            laser_module->toggle();
             break;
         }
         case 'h':   //laser "high" - turn the laser emitter on
         {
+            laser_module->write(HIGH);
             break;
         }
         case 'l':   //laser "low" - turn the laser emitter off
         {
+            laser_module->write(LOW);
+            break;
+        }
+        case 'd':   //laser "detect" - detect all slots on the board
+        {
+            uint8_t init_laser_state = laser_module->read();
+            laser_module->write(HIGH);                      //turn on the laser emitter
+            slide_module->motor->move_relative(LONG_MAX);   //command the slide motor to a very far position forward
+            
+            while (!laser_module->done())                   //while there we haven't reached the end of the board yet
+            {
+                slide_module->motor->run();                 //run the stepper motor
+                laser_module->detect_slots(true);           //run the laser detection algorithm
+            }
+            slide_module->motor->stop();
+            laser_module->write(init_laser_state);          //reset the laser to the state it started in
+
+            Serial.println("Completed detection of all slots");
+
             break;
         }
         default: Serial.println("Unrecognized command for laser: \"" + String(action) + "\"");

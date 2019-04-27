@@ -64,6 +64,14 @@ uint8_t ButtonModule::read()
 }
 
 
+void ButtonModule::reset()
+{
+    for (int i = 0; i < BUFFER_LENGTH; i++)
+    {
+        state_buffer[i] = LOW;
+    }
+}
+
 /**
     Return a string printout of the current state of the button (including inversions)
 

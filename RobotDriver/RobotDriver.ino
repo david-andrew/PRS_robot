@@ -8,23 +8,34 @@
     @date 2019-04-26
 */
 
+#include "Robot.h"
+//#include "Utilities.h"
 
-#include "SlideModule.h"
-#include "LaserModule.h"
+//declare robot and utils objects
+Robot* robot = new Robot();
+Utilities* utils = new Utilities(robot->laser_module, robot->slide_module, robot->glue_module, robot->press_module);
 
-SlideModule* slide = new SlideModule();      //create a slide module for the laser to reference
-LaserModule* laser = new LaserModule(slide);
-    
+long distance = 1000000000;
 
 void setup()
 {
-//    laser.calibrate();
   Serial.begin(115200);
-  int t = 1000;
-  laser->write(LOW);
-  
+//  robot->slide_module->calibrate();
+//  robot->laser_module->calibrate();
+//  delay(1000);
+//  Serial.println("Detecting All Slots");
+//  robot->detect_slots();
+  Serial.println("-------------------------------------");
+  Serial.println("Beginning Serial Command Control");
 }
-void loop(){}
+void loop()
+{
+  utils->serial_control();
+//  robot->slide_module->motor->move_relative(distance, true);
+//  robot->slide_module->motor->reset_limit_buffers();
+//  distance *= -1;
+//  delay(1000);  
+}
 
 
 

@@ -20,7 +20,6 @@
 #define MAX_SLOTS 256               //god help you if this isn't big enough
 #define UPPER_TRIGGER 60            //signal must be at least this high to trigger the SENSE_POSITIVE state
 #define LOWER_TRIGGER 20            //signal must be at least this low to trigger SENSE_NEGATIVE or WAIT_START
-#define ALIGNMENT_OFFSET -45;       //number of steps offset from where the laser axis is to where the slot was detected
 
 #define VISIBLE_THRESHOLD 800       //required minimum difference between ambient/active response to sense the laser
 extern int AMBIENT_RESPONSE;        //default ambient response of the sensor (i.e. laser turned OFF). Can be set via calibration
@@ -64,6 +63,8 @@ public:
 
     int calibrate();                        //calibrate the laser module. return status of calibration
     void write(uint8_t state);              //turn the laser on or off
+    void toggle();                          //toggle the current state of the laser emitter
+    uint8_t read();                         //get the current state of the laser emitter
     long* get_slot_buffer();                //return a pointer to the array of detected slots 
     int get_num_slots();                    //return the number of slots detected (i.e. length of get_slot_positions() array)
     void plot_sensor_response();            //plot the current response of the laser signal (for serial plotter)
@@ -75,6 +76,7 @@ public:
     String repr();                          //get a string with the underlying representation of the laser module
 
 private:
+    uint8_t emitter_state = LOW;            //current state of the emitter
     int response = 0;                       //response observed from the light sensor
     int peak_response = 0;                  //for finding the maximum/peak in a sequence of sensor readings
     long peak_index = 0;                    //index at which a peak was detected

@@ -43,6 +43,7 @@ public:
     ButtonModule(uint8_t pin, bool invert=false);
 
     uint8_t read();                         //get the current state of the button
+    void reset();                           //set all values in the buffer to LOW
     String str();                           //return a string for the state of the button
 
 private:

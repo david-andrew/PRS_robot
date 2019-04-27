@@ -25,8 +25,18 @@ Robot::Robot()
     // press_pneumatics = new PneumaticsModule(11, 10, true);               //start pressurized
     // snip_pneumatics = new PneumaticsModule(12, 13, false, true, false);  //start unpressurized. invert open pin
     
-    slide_module = new SlideModule();
-    laser_module = new LaserModule(slide_module);
+    //instantiate all top level modules used by the class
+    slide_module_ = new SlideModule();
+    laser_module_ = new LaserModule(slide_module);
+    glue_module_ = new GlueModule();
+    press_module_ = new PressModule();
+
+    //set up the public read-only references to each of these modules
+    slide_module = slide_module_;
+    laser_module = laser_module_;
+    glue_module = glue_module_;
+    press_module = press_module_;
+
 }
 
 /**
@@ -37,7 +47,7 @@ void Robot::calibrate()
     slide_module->calibrate();
     //glue_module.calibrate();
     //press_module.calibrate();
-    //laser_module.calibrate(); //requires arduino controller laser
+    laser_module->calibrate(); //requires arduino controller laser
 }
 
 /**
@@ -45,6 +55,7 @@ void Robot::calibrate()
 */
 void Robot::detect_slots()
 {
+    laser_module->write(HIGH);                      //turn on the laser emitter
     slide_module->motor->move_relative(LONG_MAX);   //command the slide motor to a very far position forward
     
     while (!laser_module->done())                   //while there we haven't reached the end of the board yet
@@ -53,6 +64,7 @@ void Robot::detect_slots()
         laser_module->detect_slots(true);           //run the laser detection algorithm
     }
     slide_module->motor->stop();
+    laser_module->write(LOW);                       //turn off the laser
 
     slot_buffer = laser_module->get_slot_buffer();
     num_slots = laser_module->get_num_slots();
@@ -64,6 +76,7 @@ void Robot::detect_slots()
 */
 void Robot::press_frets()
 {
+    laser_module->write(HIGH);
     for (int i = 0; i < num_slots; i++)
     {
         long target = slot_buffer[i] + LASER_ALIGNMENT_OFFSET;
@@ -71,4 +84,5 @@ void Robot::press_frets()
         //perform glue/press actions
         delay(1000);
     }
+    laser_module->write(LOW);
 }

@@ -43,7 +43,9 @@ LaserModule::LaserModule(SlideModule* slide_module)
 */
 int LaserModule::calibrate()
 {
-    int num_samples = 500; //number of samples for low/high calibration
+    Serial.println("Calibrating Laser Sensor");
+
+    int num_samples = 10000; //number of samples for low/high calibration
 
     //record the response with the laser off
     digitalWrite(PIN_EMITTER, LOW);
@@ -53,6 +55,7 @@ int LaserModule::calibrate()
         low_response += analogRead(PIN_SENSOR);
     }
     low_response /= num_samples;
+    Serial.println("Laser sensor LOW response: " + String(low_response));
 
     //record the response with the laser on
     digitalWrite(PIN_EMITTER, HIGH);
@@ -62,6 +65,10 @@ int LaserModule::calibrate()
         high_response += analogRead(PIN_SENSOR);
     }
     high_response /= num_samples;
+    Serial.println("Laser sensor HIGH response: " + String(high_response));
+
+    //turn the laser off for the end of calibration
+    digitalWrite(PIN_EMITTER, LOW);
 
     //confirm that laser can see the sensor (i.e. high_response was much larger than low_response)
     if (high_response - low_response < VISIBLE_THRESHOLD) { return 1; }  //failed to sense the laser properly
@@ -81,7 +88,27 @@ int LaserModule::calibrate()
 */
 void LaserModule::write(uint8_t state)
 {
-    digitalWrite(PIN_EMITTER, state);
+    emitter_state = state;
+    digitalWrite(PIN_EMITTER, emitter_state);
+}
+
+/**
+    Toggle the current state of the laser emitter
+*/
+void LaserModule::toggle()
+{
+    emitter_state = (uint8_t) ! emitter_state;
+    digitalWrite(PIN_EMITTER, emitter_state);
+}
+
+/**
+    Get the current state of the laser emitter
+
+    @return uint8_t state is HIGH if the laser is on and LOW if the laser is off
+*/
+uint8_t LaserModule::read()
+{
+    return emitter_state;
 }
 
 

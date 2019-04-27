@@ -46,6 +46,7 @@ public:
     void stop();                                            //immediately stop the current motion of the motor
     void run(bool check=true);                              //NEEDS TO BE CALLED ONCE PER LOOP(). Run the motor to any specified positions and (if check=true) monitor limit switches
     bool is_running();                                      //return whether or not the motor is currently moving to a target.
+    void reset_limit_buffers();                             //reset the limit switch buffers to unpressed
 
     String str();                                           //print out the current state of the stepper motor
     String repr();                                          //print out the underlying representation of the stepper motor

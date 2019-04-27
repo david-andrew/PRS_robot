@@ -235,6 +235,17 @@ bool StepperModule::is_running()
     return motor->isRunning();
 }
 
+
+/**
+    Reset the limit debounce buffers to be all unpressed
+*/
+void StepperModule::reset_limit_buffers()
+{
+    min_limit->reset();
+    max_limit->reset();
+}
+
+
 /**
     Check if the motor has pressed either the min or max limit switch. If so, stop the motor
 */

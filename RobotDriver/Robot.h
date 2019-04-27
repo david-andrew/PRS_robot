@@ -19,9 +19,9 @@
 #include "PressModule.h"
 #include "Utilities.h"
 
-#define LASER_ALIGNMENT_OFFSET -45      //number of steps offset from slot positions to the laser axis location
-#define GLUE_ALIGNMENT_OFFSET 1500      //number of steps offset from slot positions to the glue needle location
-#define PRESS_ALIGNMENT_OFFSET 15000    //number of steps offset from slot positions to the press arm location
+#define LASER_ALIGNMENT_OFFSET -85      //number of steps offset from slot positions to the laser axis location
+#define GLUE_ALIGNMENT_OFFSET 4390      //number of steps offset from slot positions to the glue needle location
+#define PRESS_ALIGNMENT_OFFSET 13440    //number of steps offset from slot positions to the press arm location
 
 /**
 
@@ -38,16 +38,23 @@ public:
     String str();                       //get a string for the state of the robot
     String repr();                      //get a string of the underlying representation of the robot
 
+    const SlideModule* slide_module;    //public read-only reference to module for slide stepper motor
+    const LaserModule* laser_module;    //public read-only reference to module for laser fret sensor system
+    const GlueModule* glue_module;      //public read-only reference to module for glue application system
+    const PressModule* press_module;    //public read-only reference to module for fret feed and press system
+
+
+
 private:
     // PneumaticsModule* glue_pneumatics;  //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
     // PneumaticsModule* press_pneumatics; //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
     // PneumaticsModule* snip_pneumatics;  //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
 
     
-    SlideModule* slide_module;          //Module to control the slide stepper motor
-    LaserModule* laser_module;          //Module to control the laser fret sensor system
-    GlueModule* glue_module;            //Module to control the glue application system
-    PressModule* press_module;          //Module to control the fret feed and press system
+    SlideModule* slide_module_;          //Module to control the slide stepper motor
+    LaserModule* laser_module_;          //Module to control the laser fret sensor system
+    GlueModule* glue_module_;            //Module to control the glue application system
+    PressModule* press_module_;          //Module to control the fret feed and press system
 
     // Utility* utilities;                 //module for controlling misc functionality, (e.g. serial control, warning indication, error correction, etc.)
 

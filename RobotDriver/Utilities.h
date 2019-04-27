@@ -62,36 +62,10 @@
     }
     ```
 
-    In the serial monitor command codes are used to control the robot
+    In the serial monitor command codes are used to control the robot. The following commands can be issued:
 
-    <TO FIX ->st means "snips toggle", and "slide target"!>
-
-    Pneumatics Command Controls:
-        pt - "press toggle"     toggles the current state of the press
-        pl - "press lower"      lowers the press arm
-        pr - "press raise"      raises the press arm
-
-        ct - "cutters toggle"   toggles the current state of the snips
-        co - "cutters open"     opens the snips
-        cc - "cutters close"    cuts with the snips
-
-        gt - "glue toggle"      toggles the current state of the glue
-        gg - "glue go"          starts laying the glue
-        gp - "glue pause"       stops laying the glue
-
-        <ENTER> with no text will reset every pneumatic to their default states
-        Default states are press:raised, snips:opened, glue:stopped
-
-    Stepper Motor Command Controls:
-        (TODO Implementation)
-        gm<long> - "glue move (relative)"   moves the glue stepper to the specified (long) relative position
-        ga<long> - "glue move (absolute)"   moves the glue stepper to the specified (long) absolute position
-        gs       - "glue stop"              stops the glue stepper motor
-
-        pm<long> - "press move (relative)"  moves the press stepper to the specified (long) relative position
-        pa<long> - "press move (absolute)"  moves the press stepper to the specified (long) absolute position
-        ps       - "press stop"             stops the press stepper motor
-
+    Slide Command Controls:
+        sc       - "slide calibrate"        calibrate the slide stepper motor
         sm<long> - "slide move (relative)"  moves the slide stepper to the specified (long) relative position
         sa<long> - "slide move (absolute)"  moves the slide stepper to the specified (long) absolute position
         ss       - "slide stop"             stops the slide stepper motor
@@ -101,21 +75,52 @@
                                             For each target command, slot indices start at 0, and end at num_slots-1
                                             Specifying the target as -1 will cause the slide to target every slot in order
 
-        <ENTER> with no text will immediately stop all stepper motors motion
+        <ENTER> with no text will immediately stop the slide motor
+
+
+    Glue Command Controls:
+        gt       - "glue toggle"            toggles the current state of the glue
+        gg       - "glue go"                starts laying the glue
+        gp       - "glue pause"             stops laying the glue
+        gc       - "glue calibrate"         calibrate the glue stepper motor
+        gm<long> - "glue move (relative)"   moves the glue stepper to the specified (long) relative position
+        ga<long> - "glue move (absolute)"   moves the glue stepper to the specified (long) absolute position
+        gs       - "glue stop"              stops the glue stepper motor
+        gf<int>  - "glue fret"              perform an entire glue fret operation (rotate, glue) on the specified slot (-1 for all)
+
+
+        <ENTER> with no text will stop the glue stepper and stop the glue pneumatics
+
+
+    Press Command Controls:
+        pt       - "press toggle"           toggles the current state of the press
+        pl       - "press lower"            lowers the press arm
+        pr       - "press raise"            raises the press arm
+        pc       - "press calibrate"        calibrate the press stepper motor
+        pm<long> - "press move (relative)"  moves the press stepper to the specified (long) relative position
+        pa<long> - "press move (absolute)"  moves the press stepper to the specified (long) absolute position
+        ps       - "press stop"             stops the press stepper motor
+        pf<int>  - "press fret"             perform an entire press fret operation (rotate, press, lift, rotate, cut) on the specified slot (-1 for all)
+
+        <ENTER> with no text will stop the press stepper, open the snips and raise the press arm
+
+
+    Cutter Command Controls:
+        ct       - "cutters toggle"         toggles the current state of the snips
+        co       - "cutters open"           opens the snips
+        cc       - "cutters close"          cuts with the snips
+        
+        <ENTER> with no text will open the snips
+    
 
     Laser Command Controls:
-        (TODO Implementation)
-        lt - "laser toggle" toggles the current state
-        lh - "laser high"   turns the laser on
-        ll - "laser low"    turns the laser off
-        
+        lc       - "laser calibrate"        calibrate the laser sensor
+        lt       - "laser toggle"           toggles the current state
+        lh       - "laser high"             turns the laser on
+        ll       - "laser low"              turns the laser off
+        ld       - "laser detect"           detect all slots on the fretboard
+
         <ENTER> with no text will turn the laser off
-
-
-    Modularized Command Controls:
-        (TODO Implementation)
-        pf - "press fret"   perform an entire press fret operation (rotate, press, lift, rotate, cut)
-        gf - "glue fret"    perform an entire glue fret operation (rotate, glue)
 
 */
 class Utilities
@@ -134,6 +139,7 @@ private:
     int buffer_index = 0;                       //current index to write characters into buffer
 
     bool read_serial();                         //store serial input into a buffer. Returns true if command available, else false
+    long get_buffer_num(int i);                 //get any numbers at the end of the buffer
     void kill_command();
     void slide_command();
     void press_command();

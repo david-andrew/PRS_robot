@@ -44,10 +44,11 @@ public:
     GlueModule();
 
     void calibrate();                                       //check the limits of the stepper motor
-    void move_relative(long relative, bool block=false);    //move the slide motor relatively by the specified number (in steps)
-    void move_absolute(long absolute, bool block=false);    //move the slide motor to the absolute position (in steps)
-    void stop();                                            //immediately stop the current motion of the motor
-    bool is_running();                                      //return whether or not the motor is currently moving to a target.
+    // void move_relative(long relative, bool block=false);    //move the slide motor relatively by the specified number (in steps)
+    // void move_absolute(long absolute, bool block=false);    //move the slide motor to the absolute position (in steps)
+    // void stop();                                            //immediately stop the current motion of the motor
+    // bool is_running();                                      //return whether or not the motor is currently moving to a target.
+    void plot_sensor_response();
     void write(uint8_t state);                              //set the state of the glue pneumatics          
     void glue_slot();                                       //perform a glue pass
     void reset();                                           //reset the glue arm for a new fret board

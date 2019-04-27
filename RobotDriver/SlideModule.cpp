@@ -26,6 +26,18 @@ SlideModule::SlideModule()
     motor = slide_motor;
 }
 
+
+/**
+    Wrapper to calibrate the slide stepper motor step position
+
+    @return int result is whether or not calibration succeeded. 0 for success, 1 for failure
+*/
+int SlideModule::calibrate()
+{
+    return slide_motor->calibrate();
+}
+
+
 /**
     Reset the slide to the start of the robot for the next fretboard
 */
