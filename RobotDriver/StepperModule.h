@@ -44,7 +44,7 @@ public:
     void move_absolute(long absolute, bool block=false);    //move the slide motor to the absolute position (in steps)
     long get_distance();                                    //return the distance to the currently targeted location
     void stop();                                            //immediately stop the current motion of the motor
-    void run(bool check=true);                              //NEEDS TO BE CALLED ONCE PER LOOP(). Run the motor to any specified positions and (if check=true) monitor limit switches
+    void run(bool check=true, bool conservative=false);     //NEEDS TO BE CALLED ONCE PER LOOP(). Run the motor to any specified positions and (if check=true) monitor limit switches
     bool is_running();                                      //return whether or not the motor is currently moving to a target.
     void reset_limit_buffers();                             //reset the limit switch buffers to unpressed
 
@@ -62,7 +62,7 @@ private:
     float STEPPER_MAXIMUM_SPEED = 4000;                     //maximum speed to drive the stepper motor at. This is used as the normal driving speed
 
     void wait_till_done();                                  //block until the motor has reached it's current target or pressed a limit
-    void check_limits();                                    //check if the motor is within bounds
+    void check_limits(bool conservative);                   //check if the motor is within bounds. If conservative, either switch will stop the motor, else, only in the direction of travel
 };
 
 #endif
