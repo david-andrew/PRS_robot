@@ -243,6 +243,11 @@ void Utilities::press_command()
     char action = command_buffer[1];
     switch (action)
     {
+        case 'c':   //press "calibrate" - move to the minimum stepper motor limit and set as the origin
+        {
+            //press_module->calibrate();
+            break;
+        }
         case 'm':   //press "move" - move the press motor relative to current position
         {   
             //get long value
@@ -286,32 +291,43 @@ void Utilities::glue_command()
     char action = command_buffer[1];
     switch (action)
     {
+        case 'c':   //glue "calibrate" - move the glue motor to the min limit and set position to zero
+        {
+            //glue_module->calibrate();
+            break;
+        }
         case 'm':   //glue "move" - move the glue motor relative to current position
         {   
-            //get long value
-            //relative move
+            long relative = get_buffer_num(2);                      //get the specified target to move to
+            glue_module->motor->move_relative(relative, true);     //command the motor to move
+            
             break;
         }
         case 'a':   //glue "absolute" - move the glue motor to an absolute position
         {
-            //get long value
-            //absolute move
+            long absolute = get_buffer_num(2);                      //get the specified target to move to
+            glue_module->motor->move_absolute(absolute, true);     //command the motor to move
+            // Serial.println("Moving glue motor to absolute position " + String(absolute));
             break;
         }
         case 's':   //glue "stop" - stop the motion of the glue motor
         {
+            glue_module->motor->stop();                    //send stop command to glue motor
             break;
         }
         case 't':   //glue "toggle" - toggle the glue pneumatics on/off 
         {
+            glue_module->glue->toggle();
             break;
         }
         case 'g':   //glue "go" - open the glue pneumatics to begin the glue stream
         {
+            glue_module->glue->write(HIGH);
             break;
         }
         case 'p':   //glue "pause" - close the glue pneumatics to pause the glue stream
         {
+            glue_module->glue->write(LOW);
             break;
         }
         default: Serial.println("Unrecognized command for glue: \"" + String(action) + "\"");

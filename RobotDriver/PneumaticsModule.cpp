@@ -40,23 +40,46 @@ PneumaticsModule::PneumaticsModule(uint8_t pin_open, uint8_t pin_close, uint8_t 
 }
 
 
+// /**
+//     Actuate the pneumatics to the OPEN state
+// */
+// void PneumaticsModule::open()
+// {
+//     state = HIGH;
+//     actuate();    
+// }
+
+
+// /**
+//     Actuate the pneumatics to the CLOSE state
+// */
+// void PneumaticsModule::close()
+// {
+//     state = LOW;
+//     actuate();
+// }
+
+
 /**
-    Actuate the pneumatics to the OPEN state
+    Set the state of the pneumatics and actuate them
+
+    @param uint8_t state is the state to write. HIGH means open the valve, LOW means close the valve
 */
-void PneumaticsModule::open()
+void PneumaticsModule::write(uint8_t state)
 {
-    state = HIGH;
-    actuate();    
+    this->state = state;
+    actuate();
 }
 
 
 /**
-    Actuate the pneumatics to the CLOSE state
+    Return the current state of the pneumatics
+
+    @return bool state of the valve. true for open (i.e. pressue applied), and false for closed (i.e. no pressure)
 */
-void PneumaticsModule::close()
+uint8_t PneumaticsModule::read()
 {
-    state = LOW;
-    actuate();
+    return state;
 }
 
 
@@ -67,17 +90,6 @@ void PneumaticsModule::toggle()
 {
     state = (uint8_t)!state;
     actuate();
-}
-
-
-/**
-    Return the current state of the pneumatics
-
-    @return bool state of the valve. true for open (i.e. pressue applied), and false for closed (i.e. no pressure)
-*/
-uint8_t PneumaticsModule::get_state()
-{
-    return state;
 }
 
 

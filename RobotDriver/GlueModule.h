@@ -21,8 +21,8 @@
 #define GLUE_MINIMUM_SPEED 50                               //speed for moving slowly (e.g. during calibration)
 #define GLUE_ACCELERATION 100000                         //acceleration of stepper motor (steps/second^2). Basically infinite, i.e. no ramp up/down.
                    
-#define PIN_GLUE_MIN_LIMIT 35                                    //pin for controlling the laser diode
-#define PIN_GLUE_MAX_LIMIT 37                                    //pin for sensing the laser beam
+#define PIN_GLUE_MIN_LIMIT 37                                    //pin for controlling the laser diode
+#define PIN_GLUE_MAX_LIMIT 35                                    //pin for sensing the laser beam
 #define PIN_GLUE_OPEN 7                                     //pin for opening glue pneumatics solenoid, i.e. stopping glue
 #define PIN_GLUE_CLOSE 6                                    //pin for closing glue pneumatics solenoid, i.e. laying glue
 #define GLUE_DEFAULT LOW                                    //default starting state for glue (stopped)

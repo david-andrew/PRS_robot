@@ -40,10 +40,12 @@ public:
     //constructor for a pneumatics actuator module
     PneumaticsModule(uint8_t pin_open, uint8_t pin_close, uint8_t init_state, bool invert_close=false, bool invert_open=false);
 
-    void open();                //open the pneumatics actuator (i.e. apply pressure)
-    void close();               //close the pneumatics actuator (i.e. release pressure)
+    // void open();                //open the pneumatics actuator (i.e. apply pressure)
+    // void close();               //close the pneumatics actuator (i.e. release pressure)
+    void write(uint8_t state);  //write the state of the pneumatics
+    uint8_t read();             //return the current state of the pneumatics
     void toggle();              //toggle the current state of the actuator
-    uint8_t get_state();        //get the current state of the actuator. true for open, false for closed
+    // uint8_t get_state();        //get the current state of the actuator. true for open, false for closed
 
     String str();               //get a string for whether or not the acutator is "Open" or "Close"
     String repr();              //get a string for the underlying pin representation of the actuator
