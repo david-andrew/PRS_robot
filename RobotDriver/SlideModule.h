@@ -12,7 +12,7 @@
 #define SLIDE_MODULE_H
 
 #include <Arduino.h>
-#include <AccelStepper.h>
+#include "StepperModule.h"
 #include "ButtonModule.h"
 
 #define STEPPER_MAX_SPEED 4000          //maximum speed of stepper motor (steps/second). Don't set this to more than 4000
@@ -62,25 +62,25 @@ public:
     AccelStepper* get_stepper_reference();                  //return a reference to the AccelStepper object. Used by the laser sensor for tracking slide position
     int calibrate();                                        //move the slide to the mimimum limit switch and set the position to zero
     
-    void move_relative(long relative, bool block=false);    //move the slide motor relatively by the specified number (in steps)
-    void move_absolute(long absolute, bool block=false);    //move the slide motor to the absolute position (in steps)
-    void stop();                                            //immediately stop the current motion of the motor
-    void run(bool check=true);                              //NEEDS TO BE CALLED ONCE PER LOOP(). Run the motor to any specified positions and (if check=true) monitor limit switches
-    bool is_running();                                      //return whether or not the motor is currently moving to a target.
-    void reset();                                           //reset the slide back to the start to prepare for the next board
+    //void move_relative(long relative, bool block=false);    //move the slide motor relatively by the specified number (in steps)
+    //void move_absolute(long absolute, bool block=false);    //move the slide motor to the absolute position (in steps)
+    //void stop();                                            //immediately stop the current motion of the motor
+    //void run(bool check=true);                              //NEEDS TO BE CALLED ONCE PER LOOP(). Run the motor to any specified positions and (if check=true) monitor limit switches
+    //bool is_running();                                      //return whether or not the motor is currently moving to a target.
+    //void reset();                                           //reset the slide back to the start to prepare for the next board
 
     String str();                                           //get a string describing the current state of the slide module
     String repr();                                          //get a string with the underlying representation of the slide module
 
 private:
-    AccelStepper* slide_motor;                              //AccelStepper object for controlling the slide stepper motor
+    StepperModule* slide_motor;                             //AccelStepper object for controlling the slide stepper motor
     ButtonModule* min_limit;                                //ButtonModule object for reading the minimum limit switch
     ButtonModule* max_limit;                                //ButtonModule object for reading the maximum limit switch
 
-    void set_max_speed(float speed);                        //set the maximum speed of the slide motor
-    void set_acceleration(float acceleration);              //set the maximum acceleration of the slide motor
-    void wait_till_done();                                  //block until the motor has reached it's current target or pressed a limit
-    void check_limits();                                    //check if the motor is within bounds
+    // void set_max_speed(float speed);                        //set the maximum speed of the slide motor
+    // void set_acceleration(float acceleration);              //set the maximum acceleration of the slide motor
+    // void wait_till_done();                                  //block until the motor has reached it's current target or pressed a limit
+    // void check_limits();                                    //check if the motor is within bounds
 
 };
 

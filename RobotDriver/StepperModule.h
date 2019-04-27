@@ -32,12 +32,14 @@ class StepperModule
 {
 public:
     //constructor for the stepper motor module, given pins for the motor and limit switches
-    StepperModule(uint8_t pin_pulse, uint8_t pin_direction, uint8_t pin_min_limit, uint8_t pin_max_limit);
+    StepperModule(uint8_t pin_pulse, uint8_t pin_direction, uint8_t pin_min_limit, uint8_t pin_max_limit, String name);
     
     AccelStepper* get_reference();                          //return a reference to the raw stepper AccelStepper object
     void set_current_position(long position);               //update the current position of the stepper motor
+    long get_current_position();                            //get the current position of the stepper motor
     void move_relative(long relative, bool block=false);    //move the slide motor relatively by the specified number (in steps)
     void move_absolute(long absolute, bool block=false);    //move the slide motor to the absolute position (in steps)
+    long get_distance();                                    //return the distance to the currently targeted location
     void stop();                                            //immediately stop the current motion of the motor
     void run(bool check=true);                              //NEEDS TO BE CALLED ONCE PER LOOP(). Run the motor to any specified positions and (if check=true) monitor limit switches
     bool is_running();                                      //return whether or not the motor is currently moving to a target.
@@ -49,6 +51,7 @@ private:
     AccelStepper* motor;                                    //AccelStepper object for controlling the stepper motor
     ButtonModule* min_limit;                                //ButtonModule object for reading the minimum limit switch
     ButtonModule* max_limit;                                //ButtonModule object for reading the maximum limit switch
+    String name;                                            //name of this motor
 
     void set_max_speed(float speed);                        //set the maximum speed of the motor
     void set_acceleration(float acceleration);              //set the maximum acceleration of the motor

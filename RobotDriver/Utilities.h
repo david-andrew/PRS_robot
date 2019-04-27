@@ -22,9 +22,6 @@
 
 
 //THESE SHOULD GO IN THE SPECIFIC MODULE THAT USES THEM
-// #define PIN_GLUE_OPEN 7                         //pin for opening glue pneumatics solenoid, i.e. stopping glue
-// #define PIN_GLUE_CLOSE 6                        //pin for closing glue pneumatics solenoid, i.e. laying glue
-// #define GLUE_DEFAULT LOW                        //default starting state for glue (stopped)
 // #define PIN_PRESS_OPEN 11                       //pin for opening press pneumatics solenoid, i.e. raising press
 // #define PIN_PRESS_CLOSE 10                      //pin for closing press pneumatics solenoid, i.e. lowering press
 // #define PRESS_DEFAULT HIGH                      //default starting state for press (raised) 
@@ -147,37 +144,6 @@ private:
     GlueModule* glue_module;                    //reference to the main GlueModule
     PressModule* press_module;                  //reference to the main PressModule
 };
-
-
-
-
-
-
-////variables for managing serial communication
-//#define SERIAL_BUFFER_LENGTH 32               //length of serial buffer for commands. currently holds up to 32 chars
-//char serial_buffer[SERIAL_BUFFER_LENGTH];     //buffer for holding serial commands
-//int buffer_index = 0;                         //current index to write characters into buffer
-//void handle_command();                        //forward declare function for handling command
-//void reset_buffer();                          //forward declare function for resetting command buffer
-//
-////Declare objects for managing the pneumatics
-//PneumaticsModule press_pneumatics(11, 10, true);                 //Press controller. Starts raised
-//PneumaticsModule snips_pneumatics(12, 13, false, true, false);   //Snips controller. Starts opened
-//PneumaticsModule glue_pneumatics(7, 6, false);                   //Glue controller. Starts stopped
-//
-//void setup()
-//{
-//  Serial.begin(9600); //make sure to set the baud rate in the serial monitor to 9600
-//}
-//
-
-
-//
-//
-
-//
-
-
 
 
 #endif
