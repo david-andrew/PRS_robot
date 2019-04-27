@@ -10,9 +10,6 @@
 
 #include <Arduino.h>
 #include "Robot.h"
-#include "PneumaticsModule.h"
-#include "SlideModule.h"
-#include "LaserModule.h"
 #include <limits.h>
 
 /**
