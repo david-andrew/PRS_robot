@@ -14,8 +14,8 @@
 #include <Arduino.h>
 #include "SlideModule.h"
 
-#define PIN_EMITTER 53              //pin for controlling the laser diode
-#define PIN_SENSOR A15              //pin for sensing the laser beam
+#define PIN_LASER_EMITTER 53        //pin for controlling the laser diode
+#define PIN_LASER_SENSOR A15        //pin for sensing the laser beam
 
 #define MAX_SLOTS 256               //god help you if this isn't big enough
 #define UPPER_TRIGGER 60            //signal must be at least this high to trigger the SENSE_POSITIVE state

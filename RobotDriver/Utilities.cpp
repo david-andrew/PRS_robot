@@ -149,11 +149,11 @@ void Utilities::kill_command()
 {
     //stop all motors from moving
     slide_module->motor->stop();
-    // glue_module->motor->stop();
+    glue_module->motor->stop();
     // press_module->motor->stop();
 
     // //set all pneumatics to default state
-    // glue_module->glue->write(LOW);
+    glue_module->glue->write(LOW);
     // press_module->press->write(HIGH);
     // press_module->snips->write(LOW);
 
@@ -293,7 +293,7 @@ void Utilities::glue_command()
     {
         case 'c':   //glue "calibrate" - move the glue motor to the min limit and set position to zero
         {
-            //glue_module->calibrate();
+            glue_module->calibrate();
             break;
         }
         case 'm':   //glue "move" - move the glue motor relative to current position

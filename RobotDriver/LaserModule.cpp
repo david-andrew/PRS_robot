@@ -28,11 +28,11 @@ LaserModule::LaserModule(SlideModule* slide_module)
     ACTIVE_RESPONSE = 980;
 
     //setup pins to be used by laser module
-    pinMode(PIN_EMITTER, OUTPUT);
-    pinMode(PIN_SENSOR, INPUT);
+    pinMode(PIN_LASER_EMITTER, OUTPUT);
+    pinMode(PIN_LASER_SENSOR, INPUT);
 
     //deactivate laser until needed
-    digitalWrite(PIN_EMITTER, LOW);
+    digitalWrite(PIN_LASER_EMITTER, LOW);
 }
 
 /**
@@ -48,27 +48,27 @@ int LaserModule::calibrate()
     int num_samples = 10000; //number of samples for low/high calibration
 
     //record the response with the laser off
-    digitalWrite(PIN_EMITTER, LOW);
+    digitalWrite(PIN_LASER_EMITTER, LOW);
     long low_response = 0;
     for (int i = 0; i < num_samples; i++)
     {
-        low_response += analogRead(PIN_SENSOR);
+        low_response += analogRead(PIN_LASER_SENSOR);
     }
     low_response /= num_samples;
     Serial.println("Laser sensor LOW response: " + String(low_response));
 
     //record the response with the laser on
-    digitalWrite(PIN_EMITTER, HIGH);
+    digitalWrite(PIN_LASER_EMITTER, HIGH);
     long high_response = 0;
     for (int i = 0; i < num_samples; i++)
     {
-        high_response += analogRead(PIN_SENSOR);
+        high_response += analogRead(PIN_LASER_SENSOR);
     }
     high_response /= num_samples;
     Serial.println("Laser sensor HIGH response: " + String(high_response));
 
     //turn the laser off for the end of calibration
-    digitalWrite(PIN_EMITTER, LOW);
+    digitalWrite(PIN_LASER_EMITTER, LOW);
 
     //confirm that laser can see the sensor (i.e. high_response was much larger than low_response)
     if (high_response - low_response < VISIBLE_THRESHOLD) 
@@ -94,7 +94,7 @@ int LaserModule::calibrate()
 void LaserModule::write(uint8_t state)
 {
     emitter_state = state;
-    digitalWrite(PIN_EMITTER, emitter_state);
+    digitalWrite(PIN_LASER_EMITTER, emitter_state);
 }
 
 /**
@@ -103,7 +103,7 @@ void LaserModule::write(uint8_t state)
 void LaserModule::toggle()
 {
     emitter_state = (uint8_t) ! emitter_state;
-    digitalWrite(PIN_EMITTER, emitter_state);
+    digitalWrite(PIN_LASER_EMITTER, emitter_state);
 }
 
 /**
@@ -149,7 +149,7 @@ void LaserModule::plot_sensor_response()
     Serial.print(" ");
     Serial.print(0);
     Serial.print(" ");
-    Serial.println(analogRead(PIN_SENSOR));
+    Serial.println(analogRead(PIN_LASER_SENSOR));
 }
 
 /**
@@ -162,7 +162,7 @@ void LaserModule::detect_slots(bool print)
 {
     if (end_of_board) { return; } //only detect slots if it is not the end of the board
 
-    response = analogRead(PIN_SENSOR) - AMBIENT_RESPONSE;       //get the current laser reading
+    response = analogRead(PIN_LASER_SENSOR) - AMBIENT_RESPONSE;       //get the current laser reading
     long index = slide_module->motor->get_current_position();   //current position of the slide motor
   
     switch (state)
