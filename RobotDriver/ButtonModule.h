@@ -15,7 +15,7 @@
 
 #define BUFFER_LENGTH 5                     //number of previous readings to check over for debouncing
 #define ACTIVATION_THRESHOLD 0.5            //fraction of readings that must be positive for the button to be pressed
-
+#define STALE_BUFFER_TIMEOUT 5000           //amount of time (in milliseconds) after which a new reading will reset the buffer
 
 /**
     The ButtonModule class is a helper class sensing buttons on the robot
@@ -51,6 +51,7 @@ private:
     bool invert;
     uint8_t state_buffer[BUFFER_LENGTH];    //buffer (queue) to store the previous states of the switch
     unsigned long tail = 0;                 //end of the buffer data structure. Should always be read as tail%BUFFER_LENGTH
+    unsigned long timestamp = 0;            //last time the button was read. If more than STALE_BUFFER_TIMEOUT, reset() is called
 };
 
 #endif

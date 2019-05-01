@@ -48,7 +48,7 @@ public:
     void plot_sensor_response();                            //plot the response of the IR sensor
     void set_direction(int direction);                      //set the current direction the glue arm will make a pass
     void reverse_direction();                               //reverse the current direciton of the glue pass
-    void glue_slot(bool ignore_IR);                         //perform a glue pass
+    void glue_slot(bool ignore_IR=true);                    //perform a glue pass
     void reset();                                           //reset the glue arm for a new fret board
 
     String str();                                           //get a string describing the current state of the slide module
@@ -60,7 +60,7 @@ public:
 
 private:
     IRModule* IR_sensor;                                    //for detecting the start and end of the slot
-    long previous_arc = DEFAULT_ARC_LENGTH;                 //previous arc length of the fretboard measured by the IR sensor
+    // long previous_arc = MIN_ARC_LENGTH;                     //previous arc length of the fretboard measured by the IR sensor
     int direction = 1;                                      //current direction of glue arm pass. -1 for towards operator, 1 for away from operator
 };
 

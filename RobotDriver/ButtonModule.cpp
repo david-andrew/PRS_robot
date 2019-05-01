@@ -31,6 +31,8 @@ ButtonModule::ButtonModule(uint8_t pin, bool invert)
     {
         state_buffer[i] = 0;
     }
+
+    timestamp = millis();   //initialize time of last button push to current time
 }
 
 
@@ -41,7 +43,12 @@ ButtonModule::ButtonModule(uint8_t pin, bool invert)
 */
 uint8_t ButtonModule::read()
 {
-    state_buffer[tail++%BUFFER_LENGTH] = digitalRead(pin);  //take a measurement and store into the buffer (increment the tail pointer and read mod BUFFER_LENGTH)
+    if (millis() - timestamp > STALE_BUFFER_TIMEOUT)        //if too much time has passed between readings, clear the buffer before taking new readings
+    {
+        reset();                            
+    }
+
+    state_buffer[tail++%BUFFER_LENGTH] = digitalRead(pin);  //take a measurement and store into the buffer (increment the tail pointer and read as tail mod BUFFER_LENGTH)
 
     //determine the fraction of readings that are high
     float fraction = 0;
@@ -61,6 +68,8 @@ uint8_t ButtonModule::read()
     {
         return invert ? HIGH : LOW;         //return LOW, unless inverted
     }
+
+    timestamp = millis();                   //update the time the last reading was taken
 }
 
 

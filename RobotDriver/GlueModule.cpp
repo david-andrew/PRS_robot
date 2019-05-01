@@ -91,12 +91,12 @@ void GlueModule::glue_slot(bool ignore_IR)
         long glue_clear = direction < 0 ? GLUE_CLEAR_NEGATIVE : GLUE_CLEAR_POSITIVE;            //position where needle is far enough to no longer be in the slot (i.e. the board is free to move)
 
 
-        motor->move(glue_start, true);  //move to the glue stream start position, and wait til there
-        glue->write(HIGH);              //activate the glue stream
-        motor->move(glue_stop, true);   //move to the glue stream stop position, and wait til there (laying glue along the way)
-        glue->write(LOW);               //turn the glue stream off
-        motor->move(glue_clear, true);  //move clear of the slot
-        reverse_direction();            //set the next pass to move the opposite direction.
+        motor->move_absolute(glue_start, true);     //move to the glue stream start position, and wait til there
+        glue->write(HIGH);                          //activate the glue stream
+        motor->move_absolute(glue_stop, true);      //move to the glue stream stop position, and wait til there (laying glue along the way)
+        glue->write(LOW);                           //turn the glue stream off
+        motor->move_absolute(glue_clear, true);     //move clear of the slot
+        reverse_direction();                        //set the next pass to move the opposite direction.
     }
     else
     {

@@ -30,8 +30,8 @@ Robot::Robot()
 void Robot::calibrate()
 {
     slide_module->calibrate();  //move the slide to the minimum limit
-    glue_module.calibrate();    //move the glue motor to the minimum limit. calibrate the IR sensor? 
-    //press_module.calibrate();   //raise the press and move the press motor to the minimum limit
+    glue_module->calibrate();    //move the glue motor to the minimum limit. calibrate the IR sensor? 
+    //press_module->calibrate();   //raise the press and move the press motor to the minimum limit
     laser_module->calibrate();  //check the ambient brightness
 
     //move each component to a good location
