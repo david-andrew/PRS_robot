@@ -160,7 +160,7 @@ void LaserModule::plot_sensor_response()
 */
 void LaserModule::detect_slots(bool print)
 {
-    if (read() == LOW) { write(HIGH); }   //activate the laser if it is off
+    // if (read() == LOW) { write(HIGH); }   //activate the laser if it is off
 
     if (end_of_board) { return; } //only detect slots if it is not the end of the board
 
@@ -216,7 +216,7 @@ void LaserModule::detect_slots(bool print)
                 trigger_index = index;
                 slot_buffer[num_slots++] = index;   //save the step position into the slot_position_buffer
             }
-            else if (index - trigger_index > 200)   //if trigger index is significantly different from the current index, then the fretboard has completely passed the sensor. This number should be larger than any single slot could be in step size
+            else if (index - trigger_index > 500)   //if trigger index is significantly different from the current index, then the fretboard has completely passed the sensor. This number should be larger than any single slot could be in step size
             {
                 //detected the end of the board
                 if (print) { Serial.println("Detected end of the fret board."); }

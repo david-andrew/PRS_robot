@@ -176,13 +176,15 @@ void Utilities::slide_command()
                 case 'l': offset = LASER_ALIGNMENT_OFFSET;  break;
                 case 'g': offset = GLUE_ALIGNMENT_OFFSET;   break;
                 case 'p': offset = PRESS_ALIGNMENT_OFFSET;  break;
-                default: Serial.println("Error: unknown target code \"" + String(target) + "\"");
+                default: 
+                    Serial.println("Error: unknown target code \"" + String(target) + "\"");
+                    return;
             }
 
             int index = (int) get_buffer_num(3);                    //get the target index from the buffer
             if (index >= 0)                                         //confirm the index is positive (i.e. target only a single slot) 
             {
-                if (index > num_slots)                              //confirm the index refers to a real slot
+                if (index > num_slots - 1)                          //confirm the index refers to a real slot
                 {
                     Serial.println("Error: Specified slot index \"" + String(index) + "\" is larger than max slot index " + String(num_slots - 1));
                 }

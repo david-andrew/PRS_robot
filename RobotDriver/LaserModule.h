@@ -18,8 +18,8 @@
 #define PIN_LASER_SENSOR A15        //pin for sensing the laser beam
 
 #define MAX_SLOTS 256               //god help you if this isn't big enough
-#define UPPER_TRIGGER 60            //signal must be at least this high to trigger the SENSE_POSITIVE state
-#define LOWER_TRIGGER 20            //signal must be at least this low to trigger SENSE_NEGATIVE or WAIT_START
+#define UPPER_TRIGGER 200            //signal must be at least this high to trigger the SENSE_POSITIVE state
+#define LOWER_TRIGGER 100            //signal must be at least this low to trigger SENSE_NEGATIVE or WAIT_START
 
 #define VISIBLE_THRESHOLD 800       //required minimum difference between ambient/active response to sense the laser
 extern int AMBIENT_RESPONSE;        //default ambient response of the sensor (i.e. laser turned OFF). Can be set via calibration
