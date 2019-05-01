@@ -44,6 +44,7 @@ public:
 
     uint8_t read();                         //get the current state of the button
     void reset();                           //set all values in the buffer to LOW
+    void clear_stale_buffer();              //clear any exceedingly old readings from the buffer
     String str();                           //return a string for the state of the button
 
 private:

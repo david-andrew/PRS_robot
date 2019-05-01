@@ -43,33 +43,29 @@ ButtonModule::ButtonModule(uint8_t pin, bool invert)
 */
 uint8_t ButtonModule::read()
 {
-    if (millis() - timestamp > STALE_BUFFER_TIMEOUT)        //if too much time has passed between readings, clear the buffer before taking new readings
-    {
-        reset();                            
-    }
+    clear_stale_buffer();                       //check if the buffer contains readings that are too old, and clear if so
 
-    state_buffer[tail++%BUFFER_LENGTH] = digitalRead(pin);  //take a measurement and store into the buffer (increment the tail pointer and read as tail mod BUFFER_LENGTH)
+    state_buffer[tail] = digitalRead(pin);      //take a measurement and store into the buffer
+    tail = (tail + 1) % BUFFER_LENGTH;          //increment the tail pointer and mod BUFFER_LENGTH to wrap the buffer around to the start of the array
 
     //determine the fraction of readings that are high
     float fraction = 0;
     for (int i = 0; i < BUFFER_LENGTH; i++)
     {
-        fraction += state_buffer[i];        //sum up the states in the buffer
+        fraction += state_buffer[i];            //sum up the states in the buffer
     }
-    fraction /= BUFFER_LENGTH;              //take the average
+    fraction /= BUFFER_LENGTH;                  //take the average
 
 
     //return the state of the button
-    if (fraction >= ACTIVATION_THRESHOLD)   //are more readings HIGH than threshold?
+    if (fraction >= ACTIVATION_THRESHOLD)       //are more readings HIGH than threshold?
     {
-        return invert ? LOW : HIGH;         //return HIGH, unless inverted
+        return invert ? LOW : HIGH;             //return HIGH, unless inverted
     }
     else
     {
-        return invert ? HIGH : LOW;         //return LOW, unless inverted
+        return invert ? HIGH : LOW;             //return LOW, unless inverted
     }
-
-    timestamp = millis();                   //update the time the last reading was taken
 }
 
 
@@ -79,6 +75,19 @@ void ButtonModule::reset()
     {
         state_buffer[i] = LOW;
     }
+}
+
+
+/**
+    Clear any exceedingly old readings from the buffer, and set to all zeros
+*/
+void ButtonModule::clear_stale_buffer()
+{
+    if (millis() - timestamp > STALE_BUFFER_TIMEOUT)        //if too much time has passed between readings, clear the buffer before taking new readings
+    {
+        reset();                                            //set the buffer to all zeros
+    }
+    timestamp = millis();                                   //update the time the last reading was taken
 }
 
 /**
