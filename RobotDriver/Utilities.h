@@ -20,17 +20,6 @@
 #define COMMAND_BUFFER_LENGTH 64                //length of command buffer in bytes. currently holds up to 64 chars (same size as Arduino Serial buffer)
 
 
-
-//THESE SHOULD GO IN THE SPECIFIC MODULE THAT USES THEM
-// #define PIN_PRESS_OPEN 11                       //pin for opening press pneumatics solenoid, i.e. raising press
-// #define PIN_PRESS_CLOSE 10                      //pin for closing press pneumatics solenoid, i.e. lowering press
-// #define PRESS_DEFAULT HIGH                      //default starting state for press (raised) 
-// #define PIN_SNIPS_OPEN 12                       //pin for opening snips pneumatics solenoid, i.e. cutting
-// #define PIN_SNIPS_CLOSE 13                      //pin for closing snips pneumatics solenoid, i.e. opening
-// #define SNIPS_DEFAULT LOW                       //default starting state for snips (opened)
-
-
-
 /**
     The Utilities class manages various debug functions along with <user feedback?>
     This class provides the ability to do the following via serial commands:
@@ -121,7 +110,6 @@
         ld       - "laser detect"           detect all slots on the fretboard
 
         <ENTER> with no text will turn the laser off
-
 */
 class Utilities
 {
@@ -130,9 +118,8 @@ public:
     Utilities(LaserModule* laser, SlideModule* slide, GlueModule* glue, PressModule* press);
 
     void serial_control();                      //control the robot via serial commands
-    void test_laser();                          //simple program that plots laser sensor readings
-    void test_IR();                             //simple program that plots IR sensor readings
-    void test_detect_slots();                   //program to test laser detection of slots
+    // void test_laser();                          //simple program that plots laser sensor readings
+    // void test_IR();                             //simple program that plots IR sensor readings
 
 private:
     char command_buffer[COMMAND_BUFFER_LENGTH]; //buffer for holding serial commands
@@ -152,6 +139,9 @@ private:
     SlideModule* slide_module;                  //reference to the main SlideModule
     GlueModule* glue_module;                    //reference to the main GlueModule
     PressModule* press_module;                  //reference to the main PressModule
+
+    bool plot_laser = false;                    //state variable for whether or not to plot laser reading
+    bool plot_IR = false;                       //state variable for whether or not to plot IR reading
 };
 
 

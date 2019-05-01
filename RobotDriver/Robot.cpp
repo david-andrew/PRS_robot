@@ -17,23 +17,11 @@
 */
 Robot::Robot()
 {
-    // //Set up Pneumatics on robot PROBABLY TO BE MOVED TO SPECIFIC MODULES
-    // glue_pneumatics = new PneumaticsModule(7, 6, false);                 //start unpressurized.
-    // press_pneumatics = new PneumaticsModule(11, 10, true);               //start pressurized
-    // snip_pneumatics = new PneumaticsModule(12, 13, false, true, false);  //start unpressurized. invert open pin
-    
-    //instantiate all top level modules used by the class
-    slide_module_ = new SlideModule();
-    laser_module_ = new LaserModule(slide_module);
-    glue_module_ = new GlueModule();
-    press_module_ = new PressModule();
-
-    //set up the public read-only references to each of these modules
-    slide_module = slide_module_;
-    laser_module = laser_module_;
-    glue_module = glue_module_;
-    press_module = press_module_;
-
+    //instantiate all top level modules used by the class (public read-only)
+    slide_module = new SlideModule();
+    laser_module = new LaserModule(slide_module);
+    glue_module = new GlueModule();
+    press_module = new PressModule();
 }
 
 /**
@@ -41,10 +29,13 @@ Robot::Robot()
 */
 void Robot::calibrate()
 {
-    slide_module->calibrate();
-    //glue_module.calibrate();
-    //press_module.calibrate();
-    laser_module->calibrate(); //requires arduino controller laser
+    slide_module->calibrate();  //move the slide to the minimum limit
+    glue_module.calibrate();    //move the glue motor to the minimum limit. calibrate the IR sensor? 
+    //press_module.calibrate();   //raise the press and move the press motor to the minimum limit
+    laser_module->calibrate();  //check the ambient brightness
+
+    //move each component to a good location
+    //glue_module->motor->move_absolute(); //move to clear of slot on + side
 }
 
 /**
@@ -73,13 +64,36 @@ void Robot::detect_slots()
 */
 void Robot::press_frets()
 {
-    laser_module->write(HIGH);
-    for (int i = 0; i < num_slots; i++)
+    int index = 0;          //start of the current group of frets
+
+    //TODO->check when clip is in the way
+    glue_module->set_direction(-1);     //set the initial direction of the glue to be negative, so that the clip will be avoided
+
+    while (true)
     {
-        long target = slot_buffer[i] + LASER_ALIGNMENT_OFFSET;
-        slide_module->motor->move_absolute(target, true);
-        //perform glue/press actions
-        delay(1000);
+        for (int i = 0; i < SLOT_GROUP_SIZE; i++)    //loop through the group for glue
+        {
+            long target = slot_buffer[index+i] + GLUE_ALIGNMENT_OFFSET;
+            slide_module->motor->move_absolute(target);
+            glue_module->glue_slot();
+        }
+        for (int i = 0; i < SLOT_GROUP_SIZE; i++)    //loop through the group for press
+        {
+            long target = slot_buffer[index+i] + PRESS_ALIGNMENT_OFFSET;
+            slide_module->motor->move_absolute(target);
+            press_module->press_slot();
+        }
     }
-    laser_module->write(LOW);
+
+
+    // //for now simply target each slot with the laser
+    // laser_module->write(HIGH);
+    // for (int i = 0; i < num_slots; i++)
+    // {
+    //     long target = slot_buffer[i] + LASER_ALIGNMENT_OFFSET;
+    //     slide_module->motor->move_absolute(target, true);
+    //     //perform glue/press actions
+    //     delay(1000);
+    // }
+    // laser_module->write(LOW);
 }

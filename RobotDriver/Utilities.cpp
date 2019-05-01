@@ -64,32 +64,23 @@ void Utilities::serial_control()
 }
 
 
-/**
-    Simple test program to plot the current laser sensor reading
-*/
-void Utilities::test_laser()
-{
-    laser_module->write(HIGH);
-    while (true) laser_module->plot_sensor_response();
-}
+// /**
+//     Simple test program to plot the current laser sensor reading
+// */
+// void Utilities::test_laser()
+// {
+//     laser_module->write(HIGH);
+//     while (true) laser_module->plot_sensor_response();
+// }
 
 
-/**
-    Simple test program to plot the current IR sensor reading
-*/
-void Utilities::test_IR()
-{
-    while (true) glue_module->plot_sensor_response();
-}
-
-
-/**
-    Test program to detect slots on a fret board
-*/
-void Utilities::test_detect_slots()
-{
-
-}
+// /**
+//     Simple test program to plot the current IR sensor reading
+// */
+// void Utilities::test_IR()
+// {
+//     while (true) glue_module->plot_sensor_response();
+// }
 
 
 /**

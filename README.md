@@ -1,6 +1,9 @@
 # PRS Fret Press Robot Driver
 This code is used to control the Fret Press Robot developed by JHU Senior Design. Code runs on on the included Arduino Mega, and runs the entire process of gluing and pressing frets into a blank fretboard
 
+## Requires
+- AccelStepper library for Arduino
+
 ## Example Normal Usage
 (assuming robot_driver_v2.ino is uploaded to the Arduino Mega)
 1. Turn on power to the robot

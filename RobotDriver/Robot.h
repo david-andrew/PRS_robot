@@ -23,6 +23,10 @@
 #define GLUE_ALIGNMENT_OFFSET 4395      //number of steps offset from slot positions to the glue needle location
 #define PRESS_ALIGNMENT_OFFSET 13447    //number of steps offset from slot positions to the press arm location
 
+#define SLOT_GROUP_SIZE 4               //number of slots to press/glue at a time.
+// #define CLIP_LOCATION 12/13 14/15    //some way of locating the clip clamping the fretboard
+
+
 /**
 
 */
@@ -51,10 +55,10 @@ private:
     // PneumaticsModule* snip_pneumatics;  //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
 
     
-    SlideModule* slide_module_;          //Module to control the slide stepper motor
-    LaserModule* laser_module_;          //Module to control the laser fret sensor system
-    GlueModule* glue_module_;            //Module to control the glue application system
-    PressModule* press_module_;          //Module to control the fret feed and press system
+    // SlideModule* slide_module_;          //Module to control the slide stepper motor
+    // LaserModule* laser_module_;          //Module to control the laser fret sensor system
+    // GlueModule* glue_module_;            //Module to control the glue application system
+    // PressModule* press_module_;          //Module to control the fret feed and press system
 
     // Utility* utilities;                 //module for controlling misc functionality, (e.g. serial control, warning indication, error correction, etc.)
 

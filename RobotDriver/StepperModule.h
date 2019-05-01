@@ -32,7 +32,7 @@ class StepperModule
 {
 public:
     //constructor for the stepper motor module, given pins for the motor and limit switches
-    StepperModule(uint8_t pin_pulse, uint8_t pin_direction, uint8_t pin_min_limit, uint8_t pin_max_limit, String name, bool reverse = false);
+    StepperModule(uint8_t pin_pulse, uint8_t pin_direction, uint8_t pin_min_limit, uint8_t pin_max_limit, String name, bool reverse=false);
     
     int calibrate();                                        //drive the motor to the minimum limit and set the position to 0
     void set_current_position(long position);               //update the current position of the stepper motor
