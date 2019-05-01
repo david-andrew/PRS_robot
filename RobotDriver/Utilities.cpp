@@ -15,20 +15,20 @@
 /**
     Constructor for the utilities class. Takes references to all top level modules on robot.
 
-    @param LaserModule* laser_module is a reference to the laser module on the robot
-    @param SlideModule* slide_module is a reference to the slide module on the robot
-    @param GlueModule* glue_module is a reference to the glue module on the robot
-    @param PressModule* press_module is a reference to the press module on the robot
+    @param Robot* robot is a reference to the robot object being controlled    
 */
-Utilities::Utilities(LaserModule* laser_module, SlideModule* slide_module, GlueModule* glue_module, PressModule* press_module)
+Utilities::Utilities(Robot* robot)
 {
-    //save references to each top level module
-    this->laser_module = laser_module;
-    this->slide_module = slide_module;
-    this->glue_module = glue_module;
-    this->press_module = press_module;
+    //save reference to the robot object
+    this->robot = robot;
 
-    //clear any garbage from command buffer
+    //save references to each top level module
+    laser_module = robot->laser_module;
+    slide_module = robot->slide_module;
+    glue_module = robot->glue_module;
+    press_module = robot->press_module;
+
+    //clear any garbage from serial command buffer
     reset_buffer();
 }
 
@@ -56,31 +56,13 @@ void Utilities::serial_control()
                 case 'c': cutter_command(); break;
                 case 'g': glue_command();   break;
                 case 'l': laser_command();  break;
+                case 'r': robot_command();  break;
                 default: Serial.println("Error: Unrecognized device code \"" + String(device) + "\"");
             }
         }
         reset_buffer();         //reset the buffer variables for next command
     }
 }
-
-
-// /**
-//     Simple test program to plot the current laser sensor reading
-// */
-// void Utilities::test_laser()
-// {
-//     laser_module->write(HIGH);
-//     while (true) laser_module->plot_sensor_response();
-// }
-
-
-// /**
-//     Simple test program to plot the current IR sensor reading
-// */
-// void Utilities::test_IR()
-// {
-//     while (true) glue_module->plot_sensor_response();
-// }
 
 
 /**
@@ -91,7 +73,6 @@ void Utilities::serial_control()
 */
 bool Utilities::read_serial()
 {
-    
     if (!Serial.available())
     {
         return false;
@@ -141,13 +122,12 @@ void Utilities::kill_command()
     //stop all motors from moving
     slide_module->motor->stop();
     glue_module->motor->stop();
-    // press_module->motor->stop();
+    press_module->motor->stop();
 
-    // //set all pneumatics to default state
-    glue_module->glue->write(LOW);
-    // press_module->press->write(HIGH);
-    // press_module->snips->write(LOW);
-
+    //set all pneumatics to default state
+    glue_module->glue->write(LOW);      //glue stream off
+    press_module->press->write(HIGH);   //press raised
+    press_module->snips->write(LOW);    //snips open
 }
 
 
@@ -176,7 +156,7 @@ void Utilities::slide_command()
         {
             long absolute = get_buffer_num(2);                      //get the specified target to move to
             slide_module->motor->move_absolute(absolute, true);     //command the motor to move
-            // Serial.println("Moving slide motor to absolute position " + String(absolute));
+
             break;
         }
         case 's':   //slide "stop" - stop the motion of the slide motor
@@ -221,13 +201,18 @@ void Utilities::slide_command()
             }
             break;
         }
+        case 'q':   //slide "queary" - print out the current state of the slide_module
+        {
+            Serial.println(slide_module->str());
+            break;
+        }
         default: Serial.println("Unrecognized command for slide: \"" + String(action) + "\"");
     }
 }
 
 
 /**
-    Handle commands for the press module
+    Handle commands for the press module (snips control is separate)
 */
 void Utilities::press_command()
 {
@@ -236,43 +221,52 @@ void Utilities::press_command()
     {
         case 'c':   //press "calibrate" - move to the minimum stepper motor limit and set as the origin
         {
-            //press_module->calibrate();
+            press_module->calibrate();
             break;
         }
         case 'm':   //press "move" - move the press motor relative to current position
         {   
-            //get long value
-            //relative move
+            long relative = get_buffer_num(2);                      //get the specified target to move to
+            press_module->motor->move_relative(relative, true);     //command the motor to move
+            
             break;
         }
         case 'a':   //press "absolute" - move the press motor to an absolute position
         {
-            //get long value
-            //absolute move
+            long absolute = get_buffer_num(2);                      //get the specified target to move to
+            slide_module->motor->move_absolute(absolute, true);     //command the motor to move
+
             break;
         }
         case 's':   //press "stop" - stop the motion of the press motor
         {
+            press_module->motor->stop();                            //send stop command to press motor
             break;
         }
         case 't':   //press "toggle" - toggle the press pneumatics on/off 
         {
-            //toggle press state
+            press_module->press->toggle();
             break;
         }
         case 'l':   //press "lower" - close the press pneumatics to lower the press
         {
-            //lower press
+            press_module->press->write(LOW);
             break;
         }
         case 'r':   //press "raise" - open the press pneumatics to raise the press
         {
-            //raise press
+            press_module->press->write(HIGH);
+            break;
+        }
+        case 'q':   //press "queary" - print out the current state of the press_module
+        {
+            Serial.println(press_module->str());
             break;
         }
         default: Serial.println("Unrecognized command for press: \"" + String(action) + "\"");
     }
 }
+
 
 /**
     Handle commands for the glue module
@@ -290,20 +284,20 @@ void Utilities::glue_command()
         case 'm':   //glue "move" - move the glue motor relative to current position
         {   
             long relative = get_buffer_num(2);                      //get the specified target to move to
-            glue_module->motor->move_relative(relative, true);     //command the motor to move
+            glue_module->motor->move_relative(relative, true);      //command the motor to move
             
             break;
         }
         case 'a':   //glue "absolute" - move the glue motor to an absolute position
         {
             long absolute = get_buffer_num(2);                      //get the specified target to move to
-            glue_module->motor->move_absolute(absolute, true);     //command the motor to move
-            // Serial.println("Moving glue motor to absolute position " + String(absolute));
+            glue_module->motor->move_absolute(absolute, true);      //command the motor to move
+            
             break;
         }
         case 's':   //glue "stop" - stop the motion of the glue motor
         {
-            glue_module->motor->stop();                    //send stop command to glue motor
+            glue_module->motor->stop();                             //send stop command to glue motor
             break;
         }
         case 't':   //glue "toggle" - toggle the glue pneumatics on/off 
@@ -321,9 +315,15 @@ void Utilities::glue_command()
             glue_module->glue->write(LOW);
             break;
         }
+        case 'q':   //glue "queary" - print out the current state of the glue_module
+        {
+            Serial.println(glue_module->str());
+            break;
+        }
         default: Serial.println("Unrecognized command for glue: \"" + String(action) + "\"");
     }
 }
+
 
 /**
     Handle commands for the cutter pneumatics
@@ -335,19 +335,28 @@ void Utilities::cutter_command()
     {
         case 't':   //cutter "toggle" - toggle the snips pneumatics on/off 
         {
+            press_module->snips->toggle();
             break;
         }
         case 'o':   //cutter "open" - close the cutter pneumatics to open the snips
         {
+            press_module->snips->write(LOW);
             break;
         }
         case 'c':   //cutter "close" - open the cutter pneumatics to cut with the snips
         {
+            press_module->snips->write(HIGH);
+            break;
+        }
+        case 'q':   //cutter "queary" - print out the current state of the snips (open/closed)
+        {
+            Serial.println("Snips are " + String(press_module->snips->read() == HIGH ? "Closed" : "Open"));
             break;
         }
         default: Serial.println("Unrecognized command for cutter: \"" + String(action) + "\"");
     }
 }
+
 
 /**
     Handle commands for the laser module
@@ -377,22 +386,49 @@ void Utilities::laser_command()
             laser_module->write(LOW);
             break;
         }
-        case 'd':   //laser "detect" - detect all slots on the board
+        case 'q':   //laser "queary" - print out the current state of the laser
         {
-            uint8_t init_laser_state = laser_module->read();
-            laser_module->write(HIGH);                      //turn on the laser emitter
-            slide_module->motor->move_relative(LONG_MAX);   //command the slide motor to a very far position forward
-            
-            while (!laser_module->done())                   //while there we haven't reached the end of the board yet
-            {
-                slide_module->motor->run();                 //run the stepper motor
-                laser_module->detect_slots(true);           //run the laser detection algorithm
-            }
-            slide_module->motor->stop();
-            laser_module->write(init_laser_state);          //reset the laser to the state it started in
+            Serial.println(laser_module->str());
+            break;
+        }
+        default: Serial.println("Unrecognized command for laser: \"" + String(action) + "\"");
+    }
+}
 
-            Serial.println("Completed detection of all slots");
 
+/**
+    Handle commands for controlling all components on the robot in concert
+*/
+void Utilities::robot_command()
+{
+    char action = command_buffer[1];
+    switch (action)
+    {
+        case 'c':   //robot "calibrate" - calibrate all components on the robot
+        {
+            robot->calibrate();
+            break;
+        }
+        case 'e':   //robot "error" - check for errors in the robot, e.g. out of fret wire, out of glue, etc.
+        {
+            //consider refactoring this to not calibrate, and just check fret wire/glue
+            int errors = robot->calibrate();
+            Serial.println("Encountered " + String(errors) + " errors during calibration");
+            break;
+        }
+        case 'd':   //robot "detect" - detect all slots on the board
+        {
+            robot->detect_slots();
+            break;
+        }
+        case 'g':   //robot "glue" - glue the specified slot on the board
+        {
+            Serial.println("NEED TO IMPLEMENT");
+            break;
+        }
+        case 'p':   //robot "press" - press the specified slot on the board
+        {
+            Serial.println("NEED TO IMPLEMENT");
             break;
         }
         default: Serial.println("Unrecognized command for laser: \"" + String(action) + "\"");

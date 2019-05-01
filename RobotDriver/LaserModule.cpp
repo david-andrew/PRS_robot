@@ -32,7 +32,7 @@ LaserModule::LaserModule(SlideModule* slide_module)
     pinMode(PIN_LASER_SENSOR, INPUT);
 
     //deactivate laser until needed
-    digitalWrite(PIN_LASER_EMITTER, LOW);
+    write(LOW);
 }
 
 /**
@@ -48,7 +48,7 @@ int LaserModule::calibrate()
     int num_samples = 10000; //number of samples for low/high calibration
 
     //record the response with the laser off
-    digitalWrite(PIN_LASER_EMITTER, LOW);
+    write(LOW);
     long low_response = 0;
     for (int i = 0; i < num_samples; i++)
     {
@@ -58,7 +58,7 @@ int LaserModule::calibrate()
     Serial.println("Laser sensor LOW response: " + String(low_response));
 
     //record the response with the laser on
-    digitalWrite(PIN_LASER_EMITTER, HIGH);
+    write(HIGH);
     long high_response = 0;
     for (int i = 0; i < num_samples; i++)
     {
@@ -68,7 +68,7 @@ int LaserModule::calibrate()
     Serial.println("Laser sensor HIGH response: " + String(high_response));
 
     //turn the laser off for the end of calibration
-    digitalWrite(PIN_LASER_EMITTER, LOW);
+    write(LOW);
 
     //confirm that laser can see the sensor (i.e. high_response was much larger than low_response)
     if (high_response - low_response < VISIBLE_THRESHOLD) 
@@ -103,7 +103,7 @@ void LaserModule::write(uint8_t state)
 void LaserModule::toggle()
 {
     emitter_state = (uint8_t) ! emitter_state;
-    digitalWrite(PIN_LASER_EMITTER, emitter_state);
+    write(emitter_state);
 }
 
 /**
@@ -160,6 +160,8 @@ void LaserModule::plot_sensor_response()
 */
 void LaserModule::detect_slots(bool print)
 {
+    if (read() == LOW) { write(HIGH); }   //activate the laser if it is off
+
     if (end_of_board) { return; } //only detect slots if it is not the end of the board
 
     response = analogRead(PIN_LASER_SENSOR) - AMBIENT_RESPONSE;       //get the current laser reading
@@ -247,4 +249,5 @@ void LaserModule::reset()
     num_slots = 0;          //to clear the buffer, simply set number of slots to 0
     end_of_board = false;   //for a new board, we have not yet seen the end
     state = WAIT_START;     //inital state the sensor is for sensing a new board
+    write(LOW);
 }

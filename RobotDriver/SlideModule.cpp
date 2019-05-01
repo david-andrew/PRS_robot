@@ -48,3 +48,12 @@ void SlideModule::reset()
         motor->run();
     }
 }
+
+
+/**
+    Return a string of the current state of the module (i.e. motor position)
+*/
+String SlideModule::str()
+{
+    return "Slide Motor Position: " + String(motor->get_current_position());
+}

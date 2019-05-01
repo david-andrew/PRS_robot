@@ -9,17 +9,22 @@
 */
 
 #include "Robot.h"
+#include "Utilities.h"
+
+
+
+
+//CURRENTLY PROGRAM FOR RUNNING SERIAL CONTROL OF ROBOT
 
 //declare robot and utils objects
 Robot* robot;
 Utilities* utils;
-//long distance = 1000000000;
 
 void setup()
 {
   Serial.begin(115200);
   robot = new Robot();
-  utils = new Utilities(robot->laser_module, robot->slide_module, robot->glue_module, robot->press_module);
+  utils = new Utilities(robot);
 //  robot->slide_module->calibrate();
 //  robot->laser_module->calibrate();
 //  delay(1000);
@@ -31,11 +36,27 @@ void setup()
 void loop()
 {
   utils->serial_control();
-//  robot->slide_module->motor->move_relative(distance, true);
-//  robot->slide_module->motor->reset_limit_buffers();
-//  distance *= -1;
-//  delay(1000);  
 }
+
+
+
+
+// //CURRENTLY PROGRAM FOR ROAMING SLIDE ALONG LENGTH
+// Robot* robot;
+// long distance = 1000000000;
+
+// void setup()
+// {
+//   Serial.begin(115200);
+//   robot = new Robot();
+//   robot->slide_module->calibrate();
+// }
+// void loop()
+// {
+//   robot->slide_module->motor->move_relative(distance, true);
+//   distance *= -1;
+//   delay(1000);
+// }
 
 
 

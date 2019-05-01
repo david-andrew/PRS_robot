@@ -26,22 +26,31 @@ Robot::Robot()
 
 /**
     Run all calibration process on the robot
-*/
-void Robot::calibrate()
-{
-    slide_module->calibrate();  //move the slide to the minimum limit
-    glue_module->calibrate();    //move the glue motor to the minimum limit. calibrate the IR sensor? 
-    //press_module->calibrate();   //raise the press and move the press motor to the minimum limit
-    laser_module->calibrate();  //check the ambient brightness
 
-    //move each component to a good location
-    //glue_module->motor->move_absolute(); //move to clear of slot on + side
+    @return int result is the number of errors that occured during calibration. 0 means no errors, result > 0 means errors occurred
+*/
+int Robot::calibrate()
+{
+    int result = 0;                         //number of errors encountered during calibration
+
+    result += slide_module->calibrate();    //move the slide to the minimum limit
+    result += glue_module->calibrate();     //move the glue motor to the minimum limit. calibrate the IR sensor? 
+    result += press_module->calibrate();    //raise the press and move the press motor to the minimum limit
+    result += laser_module->calibrate();    //check the ambient brightness
+
+    //result += check_glue();
+    //result += check_wire();
+
+    return result;
 }
 
 /**
     Move the fretboard along the track and detect the locations of all fret slots
+
+    @return int result indicates whether or not detected slots match what it should be for either the 22 or 24 fret fret boards.
+    0 for success and 1 for failure. If failure, the slots need to be cleared, and the process restarted
 */
-void Robot::detect_slots()
+int Robot::detect_slots()
 {
     laser_module->write(HIGH);                      //turn on the laser emitter
     slide_module->motor->move_relative(LONG_MAX);   //command the slide motor to a very far position forward
@@ -49,13 +58,18 @@ void Robot::detect_slots()
     while (!laser_module->done())                   //while there we haven't reached the end of the board yet
     {
         slide_module->motor->run();                 //run the stepper motor
-        laser_module->detect_slots(true);           //run the laser detection algorithm
+        laser_module->detect_slots(true);           //run the laser detection algorithm, and print out updates
     }
     slide_module->motor->stop();
     laser_module->write(LOW);                       //turn off the laser
 
     slot_buffer = laser_module->get_slot_buffer();
     num_slots = laser_module->get_num_slots();
+
+    //perform check to see if slots detected match existing board models
+    Serial.println("Detected " + String(num_slots) + " slots");
+
+    return 0;   //for now return success. TODO->make this return 1 if detection doesn't match an existing board
 }
 
 
@@ -96,4 +110,20 @@ void Robot::press_frets()
     //     delay(1000);
     // }
     // laser_module->write(LOW);
+}
+
+
+
+/**
+    Reset the state of all actuators the starting position, ready for the entire fret press process
+*/
+void Robot::reset()
+{
+    //reset the top level modules
+    press_module->reset();
+    glue_module->reset();
+    slide_module->reset();
+
+    //turn off the laser
+    laser_module->write(LOW);
 }

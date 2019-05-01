@@ -17,7 +17,7 @@
 #include "LaserModule.h"
 #include "GlueModule.h"
 #include "PressModule.h"
-#include "Utilities.h"
+// #include "Utilities.h"
 
 #define LASER_ALIGNMENT_OFFSET -85      //number of steps offset from slot positions to the laser axis location
 #define GLUE_ALIGNMENT_OFFSET 4395      //number of steps offset from slot positions to the glue needle location
@@ -34,8 +34,8 @@ class Robot
 {
 public:
     Robot();                            //constructor for the PRS Guitar Fret Press Robot
-    void calibrate();                   //run all calibration process for the robot
-    void detect_slots();                //detect the locations of all frets
+    int calibrate();                    //run all calibration process for the robot
+    int detect_slots();                 //detect the locations of all frets.
     void press_frets();                 //glue and press frets into each slot
     void reset();                       //reset the state of the robot for the next fret board
 
