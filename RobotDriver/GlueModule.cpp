@@ -100,3 +100,13 @@ void GlueModule::reset()
 {
     motor->move_absolute(GLUE_CLEAR_POSITIVE, true);      //(blocking) move to a position clear of the fretboard and clamp
 }
+
+
+/**
+    Return a string for the state of the glue module
+*/
+String GlueModule::str()
+{
+    return "Glue Motor Position: " + String(motor->get_current_position()) +
+           "\nGlue Stream: " + String(glue->read() == HIGH ? "ON" : "OFF");
+}

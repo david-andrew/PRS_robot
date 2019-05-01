@@ -66,3 +66,14 @@ void PressModule::reset()
     press->write(HIGH);                                 //raise the press
     motor->move_absolute(PRESS_CLEAR_POSITION, true);   //move clear and wait till
 }
+
+
+/**
+    Return a string for the state of the press module
+*/
+String PressModule::str()
+{
+    return "Press Motor Position: " + String(motor->get_current_position()) +
+           "\nPress: " + String(press->read() == HIGH ? "RAISED" : "LOWERED") +
+           "\nSnips: " + String(snips->read() == HIGH ? "CLOSED" : "OPEN");
+}

@@ -350,7 +350,7 @@ void Utilities::cutter_command()
         }
         case 'q':   //cutter "queary" - print out the current state of the snips (open/closed)
         {
-            Serial.println("Snips are " + String(press_module->snips->read() == HIGH ? "Closed" : "Open"));
+            Serial.println("Snips are " + String(press_module->snips->read() == HIGH ? "CLOSED" : "OPEN"));
             break;
         }
         default: Serial.println("Unrecognized command for cutter: \"" + String(action) + "\"");

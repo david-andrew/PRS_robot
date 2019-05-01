@@ -251,3 +251,12 @@ void LaserModule::reset()
     state = WAIT_START;     //inital state the sensor is for sensing a new board
     write(LOW);
 }
+
+
+/**
+    Return a string for the state of the laser module
+*/
+String LaserModule::str()
+{
+    return "Laser Emitter is " + String(read() == HIGH ? "ON" : "OFF") + "\nLaser Sensor reads: " + String(analogRead(PIN_LASER_SENSOR) - AMBIENT_RESPONSE);
+}
