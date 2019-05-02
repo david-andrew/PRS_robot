@@ -14,6 +14,7 @@
 #include <Arduino.h>
 #include "StepperModule.h"
 #include "PneumaticsModule.h"
+#include "ButtonModule.h"
 
 #define PRESS_MAXIMUM_SPEED 4000        //maximum speed of stepper motor (steps/second). Don't set this to more than 4000
 #define PRESS_MEDIUM_SPEED 1000         //nominal speed of the stepper motor
@@ -27,18 +28,18 @@
 #define PRESS_DEFAULT HIGH              //default starting state for press (raised)
 #define PIN_PRESS_PULSE 14              //pulse pin for controlling press stepper motor
 #define PIN_PRESS_DIRECTION 15          //direction pin for controlling press stepper motor
+#define PIN_FEED_DETECT 31
 
-#define PRESS_DURATION 30               //duration to apply force to the fret in the slot
-#define PRESS_CLEAR_POSITION 3500       //position at which the press arm is clear of the fretboard and snips
-#define PRESS_SNIPS_POSITION 3000       //position at which the press arm retracts to to let the snips cut the fret has_wire
+#define PRESS_DURATION 1000               //duration to apply force to the fret in the slot
+// #define PRESS_CLEAR_POSITION 4000       //position at which the press arm is clear of the fretboard and snips
+#define PRESS_SNIPS_POSITION 3500       //position at which the press arm retracts to to let the snips cut the fret has_wire
 #define PRESS_PRESS_POSITION 0          //position the press moves to to press the fret wire into the board
 
 #define PIN_SNIPS_OPEN 12               //pin for opening glue pneumatics solenoid, i.e. stopping glue
 #define PIN_SNIPS_CLOSE 13              //pin for closing glue pneumatics solenoid, i.e. laying glue
 #define SNIPS_DEFAULT LOW               //default starting state for glue (stopped)
 
-#define SNIPS_DURATION 10               //amount of time it takes the snips to actuate
-
+#define PNEUMATICS_DELAY 500            //amount of time it take the pneumatics to acuate
 
 class PressModule
 {
@@ -59,7 +60,7 @@ public:
     const PneumaticsModule* snips;      //PneumaticsModule for controlling the snips pneumatics
 
 private:
-    //no private parameters?
+    ButtonModule* feed_detect;          //limit for checking if there is still wire feeding the press
 };
 
 #endif

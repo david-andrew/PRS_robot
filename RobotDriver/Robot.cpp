@@ -81,21 +81,28 @@ void Robot::press_frets()
     int index = 0;          //start of the current group of frets
 
     //TODO->check when clip is in the way
-    glue_module->set_direction(-1);     //set the initial direction of the glue to be negative, so that the clip will be avoided
+    glue_module->set_direction(1);     //set the initial direction of the glue to be negative, so that the clip will be avoided
 
     while (true)
     {
         for (int i = 0; i < SLOT_GROUP_SIZE; i++)    //loop through the group for glue
         {
             long target = slot_buffer[index+i] + GLUE_ALIGNMENT_OFFSET;
-            slide_module->motor->move_absolute(target);
+            slide_module->motor->move_absolute(target, true);
             glue_module->glue_slot();
         }
+        glue_module->reset();   //move the glue module out of the way of the fret board clamp
         for (int i = 0; i < SLOT_GROUP_SIZE; i++)    //loop through the group for press
         {
             long target = slot_buffer[index+i] + PRESS_ALIGNMENT_OFFSET;
-            slide_module->motor->move_absolute(target);
+            slide_module->motor->move_absolute(target, true);
             press_module->press_slot();
+        }
+        
+        index += SLOT_GROUP_SIZE; //move to the next group of slots
+        if (index >= num_slots)    //if last group, exit loop
+        {
+            break;
         }
     }
 

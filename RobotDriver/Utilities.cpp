@@ -53,7 +53,7 @@ void Utilities::serial_control()
             switch (device)
             {
                 case 's': slide_command();  break;
-                // case 'p': press_command();  break; //deactivated while testing other systems
+                case 'p': press_command();  break;
                 case 'c': cutter_command(); break;
                 case 'g': glue_command();   break;
                 case 'l': laser_command();  break;
@@ -240,7 +240,7 @@ void Utilities::press_command()
         case 'a':   //press "absolute" - move the press motor to an absolute position
         {
             long absolute = get_buffer_num(2);                      //get the specified target to move to
-            slide_module->motor->move_absolute(absolute);     //command the motor to move
+            press_module->motor->move_absolute(absolute);     //command the motor to move
 
             break;
         }
@@ -423,6 +423,11 @@ void Utilities::robot_command()
             Serial.println("Encountered " + String(errors) + " errors during calibration");
             break;
         }
+        case 'r':   //robot "reset"  - reset every module on the robot to be ready for a new fret board
+        {
+            robot->reset();
+            break;
+        }
         case 'd':   //robot "detect" - detect all slots on the board
         {
             robot->detect_slots();
@@ -460,9 +465,46 @@ void Utilities::robot_command()
         }
         case 'p':   //robot "press" - press the specified slot on the board
         {
-            Serial.println("NEED TO IMPLEMENT");
+            int num_slots = laser_module->get_num_slots();          //get the current number of slots
+            long* slot_buffer = laser_module->get_slot_buffer();    //get the list of slot indices
+            int index = (int) get_buffer_num(2);                    //get the target index from the buffer
+
+            if (index >= 0)
+            {
+                if (index < num_slots)                          //confirm the index refers to a real slot
+                {
+                    slide_module->motor->move_absolute(slot_buffer[index] + PRESS_ALIGNMENT_OFFSET, true);
+                }
+                else
+                {
+                    Serial.println("Error: Specified slot index \"" + String(index) + "\" is larger than max slot index " + String(num_slots - 1));
+                }
+                press_module->press_slot();
+            }
+            else    //glue pass every slot in sequence
+            {
+                press_module->motor->move_absolute(5000, true); //move the press motor to the maximum limit
+                for (int i = 0; i < num_slots; i++)
+                {
+                    slide_module->motor->move_absolute(slot_buffer[i] + PRESS_ALIGNMENT_OFFSET, true);
+                    press_module->press_slot();
+                }
+            }            break;
+        }
+        case 'b':   //robot "both" - glue and press frets along the entire board
+        {
+            robot->press_frets();
             break;
         }
+        case 'a':   //robot "all" - perform all steps in the fret press process
+        {
+            robot->calibrate();
+            robot->reset();
+            robot->detect_slots();
+            robot->press_frets();
+            robot->reset();
+            break;
+        } 
         default: Serial.println("Unrecognized command for laser: \"" + String(action) + "\"");
     }
 }

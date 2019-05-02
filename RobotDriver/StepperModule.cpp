@@ -54,7 +54,7 @@ int StepperModule::calibrate()
     move_relative(LONG_MIN);
     while (is_running())
     {
-        run(true, true);        //check limits conservatively (any limit switch will stop motor)
+        run(true);
     }
     if (min_limit->read() == LOW || max_limit->read() == HIGH) 
     {
@@ -68,7 +68,7 @@ int StepperModule::calibrate()
     move_relative(LONG_MAX);
     while (min_limit->read() == HIGH)
     {
-        run(true, false);       //check limits non-conservatively (only button in direction of travel could stop motor)
+        run(true);
     }
     stop();
     delay(500);                 //delay to prevent any next motions from occuring too soon

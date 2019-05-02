@@ -95,11 +95,12 @@ void GlueModule::glue_slot()
 
 
 /**
-    reset the glue arm so that the board can return to the start
+    reset the glue arm so that the board can return to the start. Also turn off the glue stream if it was on
 */
 void GlueModule::reset()
 {
     motor->move_absolute(GLUE_CLEAR_POSITIVE, true);      //(blocking) move to a position clear of the fretboard and clamp
+    glue->write(LOW);
 }
 
 

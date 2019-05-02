@@ -21,9 +21,9 @@
 
 #define LASER_ALIGNMENT_OFFSET -52      //number of steps offset from slot positions to the laser axis location
 #define GLUE_ALIGNMENT_OFFSET 4436      //number of steps offset from slot positions to the glue needle location
-#define PRESS_ALIGNMENT_OFFSET 13475    //number of steps offset from slot positions to the press arm location
+#define PRESS_ALIGNMENT_OFFSET 13485    //number of steps offset from slot positions to the press arm location
 
-#define SLOT_GROUP_SIZE 4               //number of slots to press/glue at a time.
+#define SLOT_GROUP_SIZE 3               //number of slots to press/glue at a time.
 // #define CLIP_LOCATION 12/13 14/15    //some way of locating the clip clamping the fretboard
 
 

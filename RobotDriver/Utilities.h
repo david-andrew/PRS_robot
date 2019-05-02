@@ -109,10 +109,12 @@
     Robot Command Controls:
         rc       - "robot calibrate"        calibrate all device on robot in sequence
         re       - "robot error"            check for any errors on the robot (e.g. out of glue or fret wire).
+        rr       - "robot reset"            reset all modules on the robot to the starting state
         rd       - "robot detect"           perform steps to detect all slots
         rg<int>  - "robot glue"             perform an entire glue fret operation (rotate, glue) on the specified slot (-1 for all slots)
         rp<int>  - "robot press"            perform an entire press fret operation (rotate, press, lift, rotate, cut) on the specified slot (-1 for all slots)
-        ra       - "robot auto"             perform the entire fret press process from start to finish for a single fret board
+        rb       - "robot both"             perform both fret gluing and pressing along the entire board
+        ra       - "robot all"              perform the entire fret press process (calibrate, reset, detect, glue/press) for a single fret board
         rq       - "robot queary"           print out the current state of the robot
 
         WARNING: <ENTER> for all of the robot commands will have no effect as each commands blocks until they are finished
