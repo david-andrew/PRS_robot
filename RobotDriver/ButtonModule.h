@@ -42,9 +42,10 @@ public:
     //constructor for a debounced button
     ButtonModule(uint8_t pin, bool invert=false);
 
-    uint8_t read();                         //get the current state of the button
+    uint8_t read(bool saturate = false);    //get the current state of the button. If saturate, the fill the buffer with the current reading before checking state
     void reset();                           //set all values in the buffer to LOW
     void clear_stale_buffer();              //clear any exceedingly old readings from the buffer
+    void saturate_buffer();                 //read the buffer multiple times until the buffer is full
     String str();                           //return a string for the state of the button
 
 private:

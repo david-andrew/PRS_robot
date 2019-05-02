@@ -52,6 +52,7 @@ int Robot::calibrate()
 */
 int Robot::detect_slots()
 {
+    Serial.println("Detecting slots on fret board");
     laser_module->write(HIGH);                      //turn on the laser emitter
     slide_module->motor->move_relative(LONG_MAX);   //command the slide motor to a very far position forward
     
@@ -78,6 +79,7 @@ int Robot::detect_slots()
 */
 void Robot::press_frets()
 {
+    Serial.println("Gluing and pressing frets into all slots");
     int index = 0;          //start of the current group of frets
 
     //TODO->check when clip is in the way
@@ -126,6 +128,8 @@ void Robot::press_frets()
 */
 void Robot::reset()
 {
+    Serial.println("Resetting components on the robot");
+
     //reset the top level modules
     press_module->reset();
     glue_module->reset();

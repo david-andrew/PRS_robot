@@ -267,6 +267,7 @@ void Utilities::press_command()
         case 'q':   //press "queary" - print out the current state of the press_module
         {
             Serial.println(press_module->str());
+            Serial.println("Feed Detector is " + String(press_module->feed_detect->read() == HIGH ? "PRESSED" : "UNPRESSED"));
             break;
         }
         default: Serial.println("Unrecognized command for press: \"" + String(action) + "\"");

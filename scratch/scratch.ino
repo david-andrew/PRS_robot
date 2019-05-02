@@ -1,11 +1,11 @@
 #include "ButtonModule.h"
 
 
-ButtonModule button = ButtonModule(8, true);
+ButtonModule button = ButtonModule(31);
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
     pinMode(LED_BUILTIN, OUTPUT);    
 }
 

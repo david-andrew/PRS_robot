@@ -58,9 +58,10 @@ public:
     const StepperModule* motor;         //StepperModule for controlling the press arm stepper motor
     const PneumaticsModule* press;      //PneumaticsModule for controlling the press arm raising/lowering pneumatics
     const PneumaticsModule* snips;      //PneumaticsModule for controlling the snips pneumatics
+    const ButtonModule* feed_detect;    //limit for checking if there is still wire feeding the press
+
 
 private:
-    ButtonModule* feed_detect;          //limit for checking if there is still wire feeding the press
 };
 
 #endif

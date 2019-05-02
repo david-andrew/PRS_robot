@@ -39,12 +39,21 @@ ButtonModule::ButtonModule(uint8_t pin, bool invert)
 /**
     Read the current state of the button (after debouncing the signal)
 
+    @param (optional) bool saturate indicates whether the buffer should be saturated with the current reading, or simply checked for staleness
+    Default is false (i.e. clear if stale)
+
     @return uint8_t reading of whether the button is HIGH or LOW;
 */
-uint8_t ButtonModule::read()
+uint8_t ButtonModule::read(bool saturate)
 {
-    clear_stale_buffer();                       //check if the buffer contains readings that are too old, and clear if so
-
+    if (saturate)
+    {
+        saturate_buffer();                      //saturate the buffer with the current state of the button
+    }
+    else
+    {
+        clear_stale_buffer();                   //check if the buffer contains readings that are too old, and clear if so
+    }
     state_buffer[tail] = digitalRead(pin);      //take a measurement and store into the buffer
     tail = (tail + 1) % BUFFER_LENGTH;          //increment the tail pointer and mod BUFFER_LENGTH to wrap the buffer around to the start of the array
 
@@ -89,6 +98,20 @@ void ButtonModule::clear_stale_buffer()
     }
     timestamp = millis();                                   //update the time the last reading was taken
 }
+
+
+/**
+    Fill the entire buffer with the current reading of the button
+*/
+void ButtonModule::saturate_buffer()
+{
+    for (int i = 0; i < BUFFER_LENGTH; i++)
+    {
+        state_buffer[i] = digitalRead(pin);     //store the current reading
+        // delay(10);                              //pause to allow next reading to be independent
+    }
+}
+
 
 /**
     Return a string printout of the current state of the button (including inversions)

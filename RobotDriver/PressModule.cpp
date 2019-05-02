@@ -27,7 +27,8 @@ PressModule::PressModule()
     press = new PneumaticsModule(PIN_PRESS_OPEN, PIN_PRESS_CLOSE, PRESS_DEFAULT);
     snips = new PneumaticsModule(PIN_SNIPS_OPEN, PIN_SNIPS_CLOSE, SNIPS_DEFAULT, true, false); //one of the relay's is wired normally closed instead of normally open, so invert in software
 
-    feed_detect = new ButtonModule(PIN_FEED_DETECT);
+    //intialize the wire feed detector limit switch. Invert button because no wire should be LOW (mechanically reversed, i.e. no wire is HIGH)
+    feed_detect = new ButtonModule(PIN_FEED_DETECT, true);
 }
 
 
@@ -47,9 +48,10 @@ int PressModule::calibrate()
 */
 void PressModule::press_slot()
 {
-    if (feed_detect->read() == LOW)
+    if (feed_detect->read(true) == LOW) //satureate the feed limit, and then check if the fret wire has run out
     {
         Serial.println("Error: out of fret wire. Skipping press step");
+        delay(500); //pause to stop slide momentum
         return;
     }
 
