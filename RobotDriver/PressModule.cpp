@@ -17,7 +17,7 @@
 PressModule::PressModule()
 {
     //initialize the StepperModule object for the press motor (read-only public reference). Note moter rotation direction is reversed
-    motor = new StepperModule(PIN_PRESS_PULSE, PIN_PRESS_DIRECTION, PIN_PRESS_MIN_LIMIT, PIN_PRESS_MAX_LIMIT, "press", true);
+    motor = new StepperModule(PIN_PRESS_PULSE, PIN_PRESS_DIRECTION, PIN_PRESS_MIN_LIMIT, PIN_PRESS_MAX_LIMIT, "press");
     
     //set motor speeds and acceleration
     motor->set_speeds(PRESS_MINIMUM_SPEED, PRESS_MEDIUM_SPEED, PRESS_MAXIMUM_SPEED);

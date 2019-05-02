@@ -77,11 +77,12 @@ void GlueModule::reverse_direction()
 void GlueModule::glue_slot()
 {
     //interpolate for start/stop?
-
+    // long arc_length = interpolate(0, )
+    
     long start = direction < 0 ? GLUE_CLEAR_POSITIVE : GLUE_CLEAR_NEGATIVE;                 //starting position of the needle, clear of the fretboard
     long stop = direction < 0 ? GLUE_CLEAR_NEGATIVE : GLUE_CLEAR_POSITIVE;                  //ending position of the needle, clear of the fretboard
-    long glue_start = CENTER_POSITION - direction * (MIN_ARC_LENGTH + GLUE_BACKLASH) / 2;   //starting position of glue stream
-    long glue_stop = CENTER_POSITION + direction * (MIN_ARC_LENGTH + GLUE_BACKLASH) / 2;    //ending position of glue stream
+    long glue_start = CENTER_POSITION - direction * (MIN_ARC_LENGTH + GLUE_MARGIN) / 2;   //starting position of glue stream
+    long glue_stop = CENTER_POSITION + direction * (MIN_ARC_LENGTH + GLUE_MARGIN) / 2;    //ending position of glue stream
 
     motor->move_absolute(start, true);                                                      //move to the start position of the needle (should already be there from the last pass)
     motor->move_absolute(glue_start, true);                                                 //move to the glue stream start position, and wait til arrived
@@ -109,4 +110,24 @@ String GlueModule::str()
 {
     return "Glue Motor Position: " + String(motor->get_current_position()) +
            "\nGlue Stream: " + String(glue->read() == HIGH ? "ON" : "OFF");
+}
+
+
+/**
+    Interpolate a value between two points
+
+    @param float x1 is the x coordinate of the first point
+    @param float x2 is the x coordinate of the second point
+    @param float y1 is the y coordinate of the first point
+    @param float y2 is the y coordinate of the second point
+    @param float x is the desired point at which you want to interpolate
+
+    @return float y is the value of the interpolation at x
+*/
+float interpolate(float x1, float x2, float y1, float y2, float x)
+{
+    float m = (y2 - y1) / (x2 - x1);    //compute slope
+    float b = y1 - m * x1;              //compute intercept
+    float y = m * x + b;                //evaluate at desired point
+    return y;
 }

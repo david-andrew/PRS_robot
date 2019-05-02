@@ -29,13 +29,21 @@
 #define PIN_GLUE_PULSE 5                    //pulse pin connected to the glue stepper motor controller
 #define PIN_GLUE_DIRECTION 4                //direction pin connected to the glue stepper motor controller
                                                 
-#define CENTER_POSITION 3000                //step position of the center of the board
-// #define DEFAULT_ARC_LENGTH 2000             //number of steps of arc of the fretboard for when the IR sensor can't see the board
-#define MIN_ARC_LENGTH 1500                 //arc length of the narrowest portion of the fretboard
-#define MAX_ARC_LENGTH 2500                 //arc length of the widest portion of the fretboard
-#define GLUE_BACKLASH 300                   //amount of backlash in the motor connection in steps
-#define GLUE_CLEAR_POSITIVE 5000
-#define GLUE_CLEAR_NEGATIVE 1000
+#define CENTER_POSITION 7400                //step position of the center of the board
+#define MIN_ARC_LENGTH 5300                 //arc length of the narrowest portion of the fretboard
+#define MAX_ARC_LENGTH 6900                 //arc length of the widest portion of the fretboard
+// #define GLUE_BACKLASH 100//1000                   //amount of backlash in the motor connection in steps
+#define GLUE_CLEAR_POSITIVE 12000
+#define GLUE_CLEAR_NEGATIVE 3000
+#define GLUE_MARGIN 1000                     //amount of extra steps inwards to start gluing from
+// //amount inwards from edge to begin glue
+
+//10900 max width positive edge position
+//4000 max widrh negative edge position
+
+//10000 min width positive edge position
+//4700 min width negative edge position
+
 
 class GlueModule
 {
@@ -52,6 +60,10 @@ public:
 
     String str();                           //get a string describing the current state of the slide module
     String repr();                          //get a string with the underlying representation of the slide module
+
+    //interpolation helper function
+    float interpolate(float x1, float x2, float y1, float y2, float x);
+
                     
     const StepperModule* motor;             //public read-only reference to stepper motor
     const PneumaticsModule* glue;           //public read-only reference to pneumatics actuator

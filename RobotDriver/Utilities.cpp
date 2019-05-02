@@ -40,6 +40,7 @@ void Utilities::serial_control()
 {
     if (read_serial())          //attempt to get a command from Serial. If command is available, then
     {
+        Serial.println("Recieved command \"" + String(command_buffer) + "\"");
         if (buffer_index == 0)  //if ENTER was pressed with no commands
         {
             kill_command();     //stop all current actions, and reset to default states
@@ -52,7 +53,7 @@ void Utilities::serial_control()
             switch (device)
             {
                 case 's': slide_command();  break;
-                case 'p': press_command();  break;
+                // case 'p': press_command();  break; //deactivated while testing other systems
                 case 'c': cutter_command(); break;
                 case 'g': glue_command();   break;
                 case 'l': laser_command();  break;
@@ -62,6 +63,7 @@ void Utilities::serial_control()
         }
         reset_buffer();         //reset the buffer variables for next command
     }
+    run_motors();   //run any of the motors if currently in motion
 }
 
 
@@ -128,6 +130,8 @@ void Utilities::kill_command()
     glue_module->glue->write(LOW);      //glue stream off
     press_module->press->write(HIGH);   //press raised
     press_module->snips->write(LOW);    //snips open
+
+    Serial.println("Stopping all motors and resetting all actuators!");
 }
 
 
@@ -148,14 +152,14 @@ void Utilities::slide_command()
         case 'm':   //slide "move" - move the slide motor relative to current position
         {   
             long relative = get_buffer_num(2);                      //get the specified target to move to
-            slide_module->motor->move_relative(relative, true);     //command the motor to move
+            slide_module->motor->move_relative(relative);     //command the motor to move
             
             break;
         }
         case 'a':   //slide "absolute" - move the slide motor to an absolute position
         {
             long absolute = get_buffer_num(2);                      //get the specified target to move to
-            slide_module->motor->move_absolute(absolute, true);     //command the motor to move
+            slide_module->motor->move_absolute(absolute);     //command the motor to move
 
             break;
         }
@@ -190,7 +194,7 @@ void Utilities::slide_command()
                 }
                 else
                 {
-                    slide_module->motor->move_absolute(slot_buffer[index] + offset, true);
+                    slide_module->motor->move_absolute(slot_buffer[index] + offset);
                 }
             }
             else                                                    //negative index means target all slots
@@ -229,14 +233,14 @@ void Utilities::press_command()
         case 'm':   //press "move" - move the press motor relative to current position
         {   
             long relative = get_buffer_num(2);                      //get the specified target to move to
-            press_module->motor->move_relative(relative, true);     //command the motor to move
+            press_module->motor->move_relative(relative);     //command the motor to move
             
             break;
         }
         case 'a':   //press "absolute" - move the press motor to an absolute position
         {
             long absolute = get_buffer_num(2);                      //get the specified target to move to
-            slide_module->motor->move_absolute(absolute, true);     //command the motor to move
+            slide_module->motor->move_absolute(absolute);     //command the motor to move
 
             break;
         }
@@ -286,20 +290,21 @@ void Utilities::glue_command()
         case 'm':   //glue "move" - move the glue motor relative to current position
         {   
             long relative = get_buffer_num(2);                      //get the specified target to move to
-            glue_module->motor->move_relative(relative, true);      //command the motor to move
+            glue_module->motor->move_relative(relative);      //command the motor to move
             
             break;
         }
         case 'a':   //glue "absolute" - move the glue motor to an absolute position
         {
             long absolute = get_buffer_num(2);                      //get the specified target to move to
-            glue_module->motor->move_absolute(absolute, true);      //command the motor to move
+            glue_module->motor->move_absolute(absolute);      //command the motor to move
             
             break;
         }
         case 's':   //glue "stop" - stop the motion of the glue motor
         {
             glue_module->motor->stop();                             //send stop command to glue motor
+            glue_module->glue->write(LOW);                          //tell the glue pneumatics to close (stop gluing)
             break;
         }
         case 't':   //glue "toggle" - toggle the glue pneumatics on/off 
@@ -425,7 +430,32 @@ void Utilities::robot_command()
         }
         case 'g':   //robot "glue" - glue the specified slot on the board
         {
-            Serial.println("NEED TO IMPLEMENT");
+            int num_slots = laser_module->get_num_slots();          //get the current number of slots
+            long* slot_buffer = laser_module->get_slot_buffer();    //get the list of slot indices
+            int index = (int) get_buffer_num(2);                    //get the target index from the buffer
+
+            if (index >= 0)
+            {
+                if (index < num_slots)                          //confirm the index refers to a real slot
+                {
+                    slide_module->motor->move_absolute(slot_buffer[index] + GLUE_ALIGNMENT_OFFSET, true);
+                }
+                else
+                {
+                    Serial.println("Error: Specified slot index \"" + String(index) + "\" is larger than max slot index " + String(num_slots - 1));
+                }
+                glue_module->glue_slot();
+            }
+            else    //glue pass every slot in sequence
+            {
+                glue_module->set_direction(1);                  //set the glue to start in the positive direction
+                glue_module->motor->move_absolute(12000, true); //move the glue motor out of the way of the slide
+                for (int i = 0; i < num_slots; i++)
+                {
+                    slide_module->motor->move_absolute(slot_buffer[i] + GLUE_ALIGNMENT_OFFSET, true);
+                    glue_module->glue_slot();
+                }
+            }
             break;
         }
         case 'p':   //robot "press" - press the specified slot on the board
@@ -451,4 +481,15 @@ void Utilities::reset_buffer()
 
     //set the starting index to the head of the buffer
     buffer_index = 0;
+}
+
+
+/**
+    Send the run() command to each motor so that they move while new commands can be read
+*/
+void Utilities::run_motors()
+{
+    slide_module->motor->run();
+    glue_module->motor->run();
+    press_module->motor->run();
 }

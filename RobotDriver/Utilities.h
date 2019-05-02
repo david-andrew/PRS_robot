@@ -66,7 +66,7 @@
         gc       - "glue calibrate"         calibrate the glue stepper motor
         gm<long> - "glue move (relative)"   moves the glue stepper to the specified (long) relative position
         ga<long> - "glue move (absolute)"   moves the glue stepper to the specified (long) absolute position
-        gs       - "glue stop"              stops the glue stepper motor
+        gs       - "glue stop"              stops the glue stepper motor, and turn off the glue valve
         gt       - "glue toggle"            toggles the current state of the glue
         gg       - "glue go"                starts laying the glue
         gp       - "glue pause"             stops laying the glue
@@ -139,6 +139,7 @@ private:
     void laser_command();                       //commands for controlling the laser emmiter/sensor by theirself
     void robot_command();                       //commands for controlling the whole robot all at once
     void reset_buffer();                        //reset the serial buffer variables
+    void run_motors();                          //call run() for each stepper motor
 
     Robot* robot;                               //reference to the robot object containing all the modules
     LaserModule* laser_module;                  //reference to the main LaserModule
