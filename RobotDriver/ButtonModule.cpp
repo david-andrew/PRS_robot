@@ -27,10 +27,7 @@ ButtonModule::ButtonModule(uint8_t pin, bool invert)
     pinMode(pin, INPUT_PULLUP);
 
     //zero the sensor buffer
-    for (int i = 0; i < BUFFER_LENGTH; i++)
-    {
-        state_buffer[i] = 0;
-    }
+    reset();
 
     timestamp = millis();   //initialize time of last button push to current time
 }

@@ -12,12 +12,14 @@
 #define ROBOT_H
 
 #include <Arduino.h>
-#include "PneumaticsModule.h"
 #include "SlideModule.h"
 #include "LaserModule.h"
 #include "GlueModule.h"
 #include "PressModule.h"
-// #include "Utilities.h"
+#include "ButtonModule.h"
+
+#define PIN_LEFT_START_BUTTON 45
+#define PIN_RIGHT_START_BUTTON 47
 
 #define LASER_ALIGNMENT_OFFSET -52      //number of steps offset from slot positions to the laser axis location
 #define GLUE_ALIGNMENT_OFFSET 4436      //number of steps offset from slot positions to the glue needle location
@@ -38,6 +40,8 @@ public:
     int detect_slots();                 //detect the locations of all frets.
     void press_frets();                 //glue and press frets into each slot
     void reset();                       //reset the state of the robot for the next fret board
+    bool start_buttons_pressed();       //check if both start buttons are pressed
+
 
     String str();                       //get a string for the state of the robot
     String repr();                      //get a string of the underlying representation of the robot
@@ -47,32 +51,14 @@ public:
     const GlueModule* glue_module;      //public read-only reference to module for glue application system
     const PressModule* press_module;    //public read-only reference to module for fret feed and press system
 
-
+    const ButtonModule* left_start;     //left start button object
+    const ButtonModule* right_start;    //right start button object
 
 private:
-    // PneumaticsModule* glue_pneumatics;  //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
-    // PneumaticsModule* press_pneumatics; //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
-    // PneumaticsModule* snip_pneumatics;  //PROBABLY MOVE THESE TO PRESS/GLUE MODULES
 
-    
-    // SlideModule* slide_module_;          //Module to control the slide stepper motor
-    // LaserModule* laser_module_;          //Module to control the laser fret sensor system
-    // GlueModule* glue_module_;            //Module to control the glue application system
-    // PressModule* press_module_;          //Module to control the fret feed and press system
+    long* slot_buffer;                  //handle to the list of slot positions
+    int num_slots;                      //number of slots detected
 
-    // Utility* utilities;                 //module for controlling misc functionality, (e.g. serial control, warning indication, error correction, etc.)
-
-    // enum robot_states
-    // {
-    //     CALIBRATING,                    //calibrating all components that need calibration (i.e. steppers and laser)
-    //     WAIT_START,                     //after calibration, allow the operator to load a fretboard and press go
-    //     FINDING_SLOTS,                  //while detecting all slots on the robot
-    //     PRESSING_SLOTS,                 //while gluing and pressing into all slots on the robot
-    // };
-
-    // robot_states state = CALIBRATING;
-    long* slot_buffer;          //handle to the list of slot positions
-    int num_slots;              //number of slots detected
 };
 
 #endif

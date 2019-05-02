@@ -25,17 +25,24 @@ void setup()
   Serial.begin(115200);
   robot = new Robot();
   utils = new Utilities(robot);
-//  robot->slide_module->calibrate();
-//  robot->laser_module->calibrate();
-//  delay(1000);
-//  Serial.println("Detecting All Slots");
-//  robot->detect_slots();
-  Serial.println("-------------------------------------");
-  Serial.println("Beginning Serial Command Control");
+  robot->calibrate();
+  robot->reset();
+  Serial.println("Waiting for START BUTTONS or SERIAL COMMANDS");
 }
 void loop()
 {
-  utils->serial_control();
+  if (robot->start_buttons_pressed())
+  {
+    // utils->kill_command();  //stop any robot actions caused by serial control
+    robot->reset();
+    robot->detect_slots();
+    robot->press_frets();
+    robot->reset();
+  }
+  else
+  {
+    utils->serial_control();
+  }
 }
 
 

@@ -22,6 +22,9 @@ Robot::Robot()
     laser_module = new LaserModule(slide_module);
     glue_module = new GlueModule();
     press_module = new PressModule();
+
+    left_start = new ButtonModule(PIN_LEFT_START_BUTTON);
+    right_start = new ButtonModule(PIN_RIGHT_START_BUTTON);
 }
 
 /**
@@ -89,13 +92,15 @@ void Robot::press_frets()
     {
         for (int i = 0; i < SLOT_GROUP_SIZE; i++)    //loop through the group for glue
         {
+            if (index + i >= num_slots) { break; }   //break loop if at the end of the frets
             long target = slot_buffer[index+i] + GLUE_ALIGNMENT_OFFSET;
             slide_module->motor->move_absolute(target, true);
             glue_module->glue_slot();
         }
         glue_module->reset();   //move the glue module out of the way of the fret board clamp
-        for (int i = 0; i < SLOT_GROUP_SIZE; i++)    //loop through the group for press
+        for (int i = 0; i < SLOT_GROUP_SIZE; i++)   //loop through the group for press
         {
+            if (index + i >= num_slots) { break; }  //break loop if at the end of the frets
             long target = slot_buffer[index+i] + PRESS_ALIGNMENT_OFFSET;
             slide_module->motor->move_absolute(target, true);
             press_module->press_slot();
@@ -137,4 +142,15 @@ void Robot::reset()
 
     //turn off the laser
     laser_module->write(LOW);
+}
+
+
+/**
+    Check if both start buttons are pressed at the same time (indicating the operator is ready to start a new fret board)
+
+    @return bool both_pressed is true if both buttons are pressed, otherwise false
+*/
+bool Robot::start_buttons_pressed()
+{
+    return left_start->read() == HIGH && right_start->read() == HIGH;
 }
