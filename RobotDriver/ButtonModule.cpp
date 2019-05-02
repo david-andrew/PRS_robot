@@ -108,8 +108,8 @@ void ButtonModule::saturate_buffer()
     for (int i = 0; i < BUFFER_LENGTH; i++)
     {
         state_buffer[i] = digitalRead(pin);     //store the current reading
-        // delay(10);                              //pause to allow next reading to be independent
     }
+    timestamp = millis();                       //update timestamp so that buffer is known to be fresh
 }
 
 
