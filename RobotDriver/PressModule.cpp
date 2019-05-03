@@ -48,13 +48,12 @@ int PressModule::calibrate()
 */
 void PressModule::press_slot()
 {
-    if (feed_detect->read(true) == LOW) //satureate the feed limit, and then check if the fret wire has run out
+    if (!has_wire())    //check if wire is still remaining
     {
         Serial.println("Error: out of fret wire. Skipping press step");
-        delay(500); //pause to stop slide momentum
+        delay(500);     //pause to stop slide momentum
         return;
     }
-
 
     motor->move_absolute(PRESS_PRESS_POSITION, true);   //rotate the press arm to the position it will press the frets
     press->write(LOW);                                  //lower the press arm
@@ -66,6 +65,17 @@ void PressModule::press_slot()
     snips->write(HIGH);                                 //close the snips
     delay(PNEUMATICS_DELAY);                            //wait for the pneumatics to close completely
     snips->write(LOW);                                  //open the snips back up
+}
+
+
+/**
+    Check if there is still wire in the press feed
+
+    @return bool has_wire is true if there is more wire, and false if wire needs to be added
+*/
+bool PressModule::has_wire()
+{
+    return feed_detect->read(true) == HIGH; //satureate the feed limit, and then check if the fret wire is still there
 }
 
 
@@ -87,5 +97,6 @@ String PressModule::str()
 {
     return "Press Motor Position: " + String(motor->get_current_position()) +
            "\nPress: " + String(press->read() == HIGH ? "RAISED" : "LOWERED") +
-           "\nSnips: " + String(snips->read() == HIGH ? "CLOSED" : "OPEN");
+           "\nSnips: " + String(snips->read() == HIGH ? "CLOSED" : "OPEN") + 
+           "\nPress Feed: " + String(has_wire() ? "HAS WIRE" : "OUT OF WIRE");
 }

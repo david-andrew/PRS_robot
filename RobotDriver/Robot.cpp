@@ -28,23 +28,21 @@ Robot::Robot()
 }
 
 /**
-    Run all calibration process on the robot
+    Run all calibration process on the robot, and keep track of number of errors
 
     @return int result is the number of errors that occured during calibration. 0 means no errors, result > 0 means errors occurred
 */
 int Robot::calibrate()
 {
-    int result = 0;                         //number of errors encountered during calibration
+    num_errors = 0;                             //number of errors encountered during calibration
 
-    result += slide_module->calibrate();    //move the slide to the minimum limit
-    result += glue_module->calibrate();     //move the glue motor to the minimum limit. calibrate the IR sensor? 
-    result += press_module->calibrate();    //raise the press and move the press motor to the minimum limit
-    result += laser_module->calibrate();    //check the ambient brightness
+    num_errors += slide_module->calibrate();    //move the slide to the minimum limit
+    num_errors += glue_module->calibrate();     //move the glue motor to the minimum limit. calibrate the IR sensor? 
+    num_errors += press_module->calibrate();    //raise the press and move the press motor to the minimum limit
+    num_errors += laser_module->calibrate();    //check the ambient brightness
 
-    //result += check_glue();
-    //result += check_wire();
-
-    return result;
+    //num_errors += check_glue();
+    num_errors += check_wire();
 }
 
 /**
@@ -55,6 +53,8 @@ int Robot::calibrate()
 */
 int Robot::detect_slots()
 {
+    if (has_errors()) { return; } //cancel fret detection process if there are errors
+
     Serial.println("Detecting slots on fret board");
     laser_module->write(HIGH);                      //turn on the laser emitter
     slide_module->motor->move_relative(LONG_MAX);   //command the slide motor to a very far position forward
@@ -82,48 +82,45 @@ int Robot::detect_slots()
 */
 void Robot::press_frets()
 {
-    Serial.println("Gluing and pressing frets into all slots");
-    int index = 0;          //start of the current group of frets
+    if (has_errors()) { return; }                     //cancel fret press/cut process if there are errors
 
-    //TODO->check when clip is in the way
-    glue_module->set_direction(1);     //set the initial direction of the glue to be negative, so that the clip will be avoided
+    Serial.println("Gluing and pressing frets into all slots");
+    int index = 0;                                      //start of the current group of frets
+
+    glue_module->set_direction(1);                      //set the initial direction of the glue to be negative, so that the clip will be avoided
 
     while (true)
     {
-        for (int i = 0; i < SLOT_GROUP_SIZE; i++)    //loop through the group for glue
+        if (has_errors()) { break; }                    //if the robot has any errors, stop the sequence
+        
+        //glue group loop
+        for (int i = 0; i < SLOT_GROUP_SIZE; i++)       //loop through the group for glue
         {
-            if (index + i >= num_slots) { break; }   //break loop if at the end of the frets
+            if (has_errors()) { break; }                //break loop if the robot has errors
+            if (index + i >= num_slots) { break; }      //break loop if at the end of the frets
+            
+            //go to the next glue slot and lay glue in the slot
             long target = slot_buffer[index+i] + GLUE_ALIGNMENT_OFFSET;
             slide_module->motor->move_absolute(target, true);
             glue_module->glue_slot();
         }
-        glue_module->reset();   //move the glue module out of the way of the fret board clamp
-        for (int i = 0; i < SLOT_GROUP_SIZE; i++)   //loop through the group for press
+        glue_module->reset();                           //move the glue module out of the way of the fret board clamp
+        
+        //press/cut group loop
+        for (int i = 0; i < SLOT_GROUP_SIZE; i++)       //loop through the group for press
         {
-            if (index + i >= num_slots) { break; }  //break loop if at the end of the frets
+            if (has_errors()) { break; }                //break loop if the robot has errors
+            if (index + i >= num_slots) { break; }      //break loop if at the end of the frets
+            
+            //go to next press slot and press/cut the fret in the slot
             long target = slot_buffer[index+i] + PRESS_ALIGNMENT_OFFSET;
             slide_module->motor->move_absolute(target, true);
             press_module->press_slot();
         }
         
         index += SLOT_GROUP_SIZE; //move to the next group of slots
-        if (index >= num_slots)    //if last group, exit loop
-        {
-            break;
-        }
+        if (index >= num_slots) { break; } //if last group, exit loop
     }
-
-
-    // //for now simply target each slot with the laser
-    // laser_module->write(HIGH);
-    // for (int i = 0; i < num_slots; i++)
-    // {
-    //     long target = slot_buffer[i] + LASER_ALIGNMENT_OFFSET;
-    //     slide_module->motor->move_absolute(target, true);
-    //     //perform glue/press actions
-    //     delay(1000);
-    // }
-    // laser_module->write(LOW);
 }
 
 
@@ -140,8 +137,8 @@ void Robot::reset()
     glue_module->reset();
     slide_module->reset();
 
-    //turn off the laser
-    laser_module->write(LOW);
+    //reset the laser module
+    laser_module->reset();
 }
 
 
@@ -153,4 +150,45 @@ void Robot::reset()
 bool Robot::start_buttons_pressed()
 {
     return left_start->read() == HIGH && right_start->read() == HIGH;
+}
+
+
+
+/**
+    Check if there is still wire in the feed mechanism (wrapper for press_module has_wire() function)
+
+    @return int result is 0 if there is wire, and 1 if wire has run out
+*/
+int Robot::check_wire()
+{
+    return (int) !press_module->has_wire();
+}
+
+
+/**
+    Return whether or not the robot currently has any errors
+
+    @return bool has_errors is true if there are any errors, otherwise false
+*/
+bool Robot::has_errors()
+{
+    if (num_errors == -1)   //robot hasn't been calibrated yet
+    {
+        Serial.println("Robot has not been calibrated yet");
+        return true;
+    }
+    
+    //update errors if glue or wire is out
+    // num_errors += check_glue();
+    num_errors += check_wire();
+
+    if (num_errors > 0) 
+    {
+        Serial.println("Robot has errors. Please recalibrate before continuing");
+        return true;
+    }
+    else    //no errors occured
+    {
+        return false;
+    }
 }

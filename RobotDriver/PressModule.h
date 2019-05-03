@@ -49,7 +49,7 @@ public:
 
     int calibrate();                    //raise the press, rotate to the minimum limit, and set as origin 
     void press_slot();                  //perform all steps to press a fret
-    // bool has_wire();                    //check if there is still wire in the press feed
+    bool has_wire();                    //check if there is still wire in the press feed
     void reset();                       //reset the press to a good starting position
 
     String str();

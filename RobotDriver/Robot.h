@@ -23,7 +23,7 @@
 
 #define LASER_ALIGNMENT_OFFSET -52      //number of steps offset from slot positions to the laser axis location
 #define GLUE_ALIGNMENT_OFFSET 4436      //number of steps offset from slot positions to the glue needle location
-#define PRESS_ALIGNMENT_OFFSET 13485    //number of steps offset from slot positions to the press arm location
+#define PRESS_ALIGNMENT_OFFSET 13487    //number of steps offset from slot positions to the press arm location
 
 #define SLOT_GROUP_SIZE 5               //number of slots to press/glue at a time.
 // #define CLIP_LOCATION 12/13 14/15    //some way of locating the clip clamping the fretboard
@@ -55,10 +55,11 @@ public:
     const ButtonModule* right_start;    //right start button object
 
 private:
-
+    int check_wire();                   //check whether or not there is wire in the feed mechanism
+    bool has_errors();                  //check if there are any errors currently in the robot
     long* slot_buffer;                  //handle to the list of slot positions
     int num_slots;                      //number of slots detected
-
+    int num_errors = -1;                //keep track of the current number of errors
 };
 
 #endif
