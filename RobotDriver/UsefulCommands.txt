@@ -1,0 +1,43 @@
+Turn robot on, and wait for everything to stop moving (serial will say waiting for commands)
+
+Detect the location of all slots
+- rd    "robot detect"
+
+Align the press with the nth detected slot (starting from 0)
+- stp<int>    "slide target press"
+
+Rotate the press arm to be ready to press a fret
+- pa0    "press absolute 0"  i.e. rotate press stepper to position 0
+
+Toggle the press
+- pt    "press toggle"
+
+Rotate press back from board so snips can cut
+- pa4000    "press absolute 4000" i.e. rotate press stepper to position 4000
+
+Toggle the snips
+- ct    "cutter toggle"
+
+Perform the entire press operation on the nth fret (align, rotate arm, press, raise, rotate back, cut close, cut open)
+- rp<int>    "robot press"
+WARNING: don't do this on slots that already have a wire pressed in them
+
+
+
+
+
+Other potentially useful commands:
+
+Align the glue with the nth detected slot
+- stg<int>    "slide target glue"
+
+Align the laser with the nth detected slot
+- stl<int>    "slide target laser"
+
+Toggle the laser
+- lt    "laser toggle"
+
+Toggle the glue
+- gt    "glue toggle"
+
+All other commands can be found in Utilities.h
