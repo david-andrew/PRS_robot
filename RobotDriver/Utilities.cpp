@@ -151,14 +151,14 @@ void Utilities::slide_command()
         }
         case 'm':   //slide "move" - move the slide motor relative to current position
         {   
-            long relative = get_buffer_num(2);                      //get the specified target to move to
+            long relative = get_buffer_num();                      //get the specified target to move to
             slide_module->motor->move_relative(relative);     //command the motor to move
             
             break;
         }
         case 'a':   //slide "absolute" - move the slide motor to an absolute position
         {
-            long absolute = get_buffer_num(2);                      //get the specified target to move to
+            long absolute = get_buffer_num();                      //get the specified target to move to
             slide_module->motor->move_absolute(absolute);     //command the motor to move
 
             break;
@@ -177,9 +177,9 @@ void Utilities::slide_command()
 
             switch (target) //save the step offset for the specific target
             {
-                case 'l': offset = LASER_ALIGNMENT_OFFSET;  break;
-                case 'g': offset = GLUE_ALIGNMENT_OFFSET;   break;
-                case 'p': offset = PRESS_ALIGNMENT_OFFSET;  break;
+                case 'l': offset = robot->LASER_ALIGNMENT_OFFSET;  break;
+                case 'g': offset = robot->GLUE_ALIGNMENT_OFFSET;   break;
+                case 'p': offset = robot->PRESS_ALIGNMENT_OFFSET;  break;
                 default: 
                     Serial.println("Error: unknown target code \"" + String(target) + "\"");
                     return;
@@ -232,14 +232,14 @@ void Utilities::press_command()
         }
         case 'm':   //press "move" - move the press motor relative to current position
         {   
-            long relative = get_buffer_num(2);                      //get the specified target to move to
+            long relative = get_buffer_num();                      //get the specified target to move to
             press_module->motor->move_relative(relative);     //command the motor to move
             
             break;
         }
         case 'a':   //press "absolute" - move the press motor to an absolute position
         {
-            long absolute = get_buffer_num(2);                      //get the specified target to move to
+            long absolute = get_buffer_num();                      //get the specified target to move to
             press_module->motor->move_absolute(absolute);     //command the motor to move
 
             break;
@@ -270,6 +270,12 @@ void Utilities::press_command()
             Serial.println("Feed Detector is " + String(press_module->feed_detect->read() == HIGH ? "PRESSED" : "UNPRESSED"));
             break;
         }
+        case 'o':   //press "offset" - update the PRESS_ALIGNMENT_OFFSET
+        {
+            int delta = get_buffer_num();
+            robot->update_press_offset(delta);
+            break;
+        }
         default: Serial.println("Unrecognized command for press: \"" + String(action) + "\"");
     }
 }
@@ -290,14 +296,14 @@ void Utilities::glue_command()
         }
         case 'm':   //glue "move" - move the glue motor relative to current position
         {   
-            long relative = get_buffer_num(2);                      //get the specified target to move to
+            long relative = get_buffer_num();                      //get the specified target to move to
             glue_module->motor->move_relative(relative);      //command the motor to move
             
             break;
         }
         case 'a':   //glue "absolute" - move the glue motor to an absolute position
         {
-            long absolute = get_buffer_num(2);                      //get the specified target to move to
+            long absolute = get_buffer_num();                      //get the specified target to move to
             glue_module->motor->move_absolute(absolute);      //command the motor to move
             
             break;
@@ -326,6 +332,12 @@ void Utilities::glue_command()
         case 'q':   //glue "queary" - print out the current state of the glue_module
         {
             Serial.println(glue_module->str());
+            break;
+        }
+        case 'o':   //glue "offset" - update the GLUE_ALIGNMENT_OFFSET
+        {
+            int delta = get_buffer_num();
+            robot->update_glue_offset(delta);
             break;
         }
         default: Serial.println("Unrecognized command for glue: \"" + String(action) + "\"");
@@ -399,6 +411,12 @@ void Utilities::laser_command()
             Serial.println(laser_module->str());
             break;
         }
+        case 'o':   //laser "offset" - update the LASER_ALIGNMENT_OFFSET
+        {
+            int delta = get_buffer_num();
+            robot->update_laser_offset(delta);
+            break;
+        }
         default: Serial.println("Unrecognized command for laser: \"" + String(action) + "\"");
     }
 }
@@ -444,7 +462,7 @@ void Utilities::robot_command()
             {
                 if (index < num_slots)                          //confirm the index refers to a real slot
                 {
-                    slide_module->motor->move_absolute(slot_buffer[index] + GLUE_ALIGNMENT_OFFSET, true);
+                    slide_module->motor->move_absolute(slot_buffer[index] + robot->GLUE_ALIGNMENT_OFFSET, true);
                 }
                 else
                 {
@@ -458,7 +476,7 @@ void Utilities::robot_command()
                 glue_module->motor->move_absolute(12000, true); //move the glue motor out of the way of the slide
                 for (int i = 0; i < num_slots; i++)
                 {
-                    slide_module->motor->move_absolute(slot_buffer[i] + GLUE_ALIGNMENT_OFFSET, true);
+                    slide_module->motor->move_absolute(slot_buffer[i] + robot->GLUE_ALIGNMENT_OFFSET, true);
                     glue_module->glue_slot();
                 }
             }
@@ -474,7 +492,7 @@ void Utilities::robot_command()
             {
                 if (index < num_slots)                          //confirm the index refers to a real slot
                 {
-                    slide_module->motor->move_absolute(slot_buffer[index] + PRESS_ALIGNMENT_OFFSET, true);
+                    slide_module->motor->move_absolute(slot_buffer[index] + robot->PRESS_ALIGNMENT_OFFSET, true);
                 }
                 else
                 {
@@ -487,7 +505,7 @@ void Utilities::robot_command()
                 press_module->motor->move_absolute(5000, true); //move the press motor to the maximum limit
                 for (int i = 0; i < num_slots; i++)
                 {
-                    slide_module->motor->move_absolute(slot_buffer[i] + PRESS_ALIGNMENT_OFFSET, true);
+                    slide_module->motor->move_absolute(slot_buffer[i] + robot->PRESS_ALIGNMENT_OFFSET, true);
                     press_module->press_slot();
                 }
             }            break;
@@ -505,7 +523,17 @@ void Utilities::robot_command()
             robot->press_frets();
             robot->reset();
             break;
-        } 
+        }
+        case 's':   //robot "save" - save the ALIGNMENT_OFFSET variables to EEPROM
+        {
+            robot->save_offsets();
+            break;
+        }
+        case 'l':   //robot "load" - load the ALIGNMENT_OFFSET variables from EEPROM
+        {
+            robot->load_offsets();
+            break;
+        }
         default: Serial.println("Unrecognized command for laser: \"" + String(action) + "\"");
     }
 }

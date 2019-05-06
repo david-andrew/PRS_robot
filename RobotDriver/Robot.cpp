@@ -11,6 +11,7 @@
 #include <Arduino.h>
 #include "Robot.h"
 #include <limits.h>
+#include <EEPROM.h>
 
 /**
     Constructor for Robot object
@@ -23,8 +24,12 @@ Robot::Robot()
     glue_module = new GlueModule();
     press_module = new PressModule();
 
+    //create objects for the start buttons
     left_start = new ButtonModule(PIN_LEFT_START_BUTTON);
     right_start = new ButtonModule(PIN_RIGHT_START_BUTTON);
+
+    //load the alignment offset variables from EEPROM
+    load_offsets();
 }
 
 /**
@@ -34,15 +39,29 @@ Robot::Robot()
 */
 int Robot::calibrate()
 {
-    num_errors = 0;                             //number of errors encountered during calibration
+    slide_module->calibrate();    //move the slide to the minimum limit
+    glue_module->calibrate();     //move the glue motor to the minimum limit. calibrate the IR sensor? 
+    press_module->calibrate();    //raise the press and move the press motor to the minimum limit
+    laser_module->calibrate();    //check the ambient brightness
 
-    num_errors += slide_module->calibrate();    //move the slide to the minimum limit
-    num_errors += glue_module->calibrate();     //move the glue motor to the minimum limit. calibrate the IR sensor? 
-    num_errors += press_module->calibrate();    //raise the press and move the press motor to the minimum limit
-    num_errors += laser_module->calibrate();    //check the ambient brightness
+    return check_errors();
+}
 
-    //num_errors += check_glue();
-    num_errors += check_wire();
+
+/**
+    Check how many errors are currently present in each module. Don't run the robot unless this is 0
+
+    @return int num_errors is the sum of all errors that occurred in each of the modules
+*/
+int Robot::check_errors()
+{
+    int num_errors = 0;                         //number of errors encountered during calibration
+    num_errors += slide_module->check_errors(); //check if slide was calibrated
+    num_errors += glue_module->check_errors();  //check if glue was calibrated, and if glue needs to be refilled
+    num_errors += press_module->check_errors(); //check if press was calibrated, and if fret wire needs to be added
+    num_errors += laser_module->check_errors(); //check if laser was aligned properly
+
+    return num_errors;
 }
 
 /**
@@ -53,7 +72,7 @@ int Robot::calibrate()
 */
 int Robot::detect_slots()
 {
-    if (has_errors()) { return; } //cancel fret detection process if there are errors
+    if (check_errors() > 0) { return; } //cancel fret detection process if there are errors
 
     Serial.println("Detecting slots on fret board");
     laser_module->write(HIGH);                      //turn on the laser emitter
@@ -82,7 +101,7 @@ int Robot::detect_slots()
 */
 void Robot::press_frets()
 {
-    if (has_errors()) { return; }                     //cancel fret press/cut process if there are errors
+    if (check_errors() > 0) { return; }                     //cancel fret press/cut process if there are errors
 
     Serial.println("Gluing and pressing frets into all slots");
     int index = 0;                                      //start of the current group of frets
@@ -91,12 +110,12 @@ void Robot::press_frets()
 
     while (true)
     {
-        if (has_errors()) { break; }                    //if the robot has any errors, stop the sequence
+        if (check_errors() > 0) { break; }                    //if the robot has any errors, stop the sequence
         
         //glue group loop
         for (int i = 0; i < SLOT_GROUP_SIZE; i++)       //loop through the group for glue
         {
-            if (has_errors()) { break; }                //break loop if the robot has errors
+            if (check_errors() > 0) { break; }                //break loop if the robot has errors
             if (index + i >= num_slots) { break; }      //break loop if at the end of the frets
             
             //go to the next glue slot and lay glue in the slot
@@ -109,7 +128,7 @@ void Robot::press_frets()
         //press/cut group loop
         for (int i = 0; i < SLOT_GROUP_SIZE; i++)       //loop through the group for press
         {
-            if (has_errors()) { break; }                //break loop if the robot has errors
+            if (check_errors() > 0) { break; }                //break loop if the robot has errors
             if (index + i >= num_slots) { break; }      //break loop if at the end of the frets
             
             //go to next press slot and press/cut the fret in the slot
@@ -153,42 +172,117 @@ bool Robot::start_buttons_pressed()
 }
 
 
-
 /**
-    Check if there is still wire in the feed mechanism (wrapper for press_module has_wire() function)
+    update the LASER_ALIGNMENT_OFFSET variable by delta
 
-    @return int result is 0 if there is wire, and 1 if wire has run out
+    @param int delta is the amount to change the offset variable by
 */
-int Robot::check_wire()
+void Robot::update_laser_offset(int delta)
 {
-    return (int) !press_module->has_wire();
+    LASER_ALIGNMENT_OFFSET += delta;
+    Serial.println("New LASER_ALIGNMENT_OFFSET: " + String(LASER_ALIGNMENT_OFFSET));
 }
 
 
 /**
-    Return whether or not the robot currently has any errors
+    update the GLUE_ALIGNMENT_OFFSET variable by delta
 
-    @return bool has_errors is true if there are any errors, otherwise false
+    @param int delta is the amount to change the offset variable by
 */
-bool Robot::has_errors()
+void Robot::update_glue_offset(int delta)
 {
-    if (num_errors == -1)   //robot hasn't been calibrated yet
+    GLUE_ALIGNMENT_OFFSET += delta;
+    Serial.println("New GLUE_ALIGNMENT_OFFSET: " + String(GLUE_ALIGNMENT_OFFSET));
+}
+
+
+/**
+    update the PRESS_ALIGNMENT_OFFSET variable by delta
+
+    @param int delta is the amount to change the offset variable by
+*/
+void Robot::update_press_offset(int delta)
+{
+    PRESS_ALIGNMENT_OFFSET += delta;
+    Serial.println("New PRESS_ALIGNMENT_OFFSET: " + String(PRESS_ALIGNMENT_OFFSET));
+}
+
+
+/**
+    Save each _ALIGNMENT_OFFSET variable to EEPROM for later reload
+*/
+void Robot::save_offsets()
+{
+    Serial.println("Writing ALIGNMENT_OFFSET variables to EEPROM");
+    Serial.println("    LASER: " + String(LASER_ALIGNMENT_OFFSET));
+    Serial.println("    GLUE: " + String(GLUE_ALIGNMENT_OFFSET));
+    Serial.println("    PRESS: " + String(PRESS_ALIGNMENT_OFFSET));
+
+    EEPROM.put(LASER_ALIGNMENT_ADDRESS, LASER_ALIGNMENT_OFFSET);
+    EEPROM.put(GLUE_ALIGNMENT_ADDRESS,  GLUE_ALIGNMENT_OFFSET);
+    EEPROM.put(PRESS_ALIGNMENT_ADDRESS, PRESS_ALIGNMENT_OFFSET);
+}
+
+
+/**
+    Load each _ALIGNMENT_OFFSET variable to EEPROM. 
+    If the values are too different from the defaults (i.e. probably bad data), then use the defaults
+*/
+void Robot::load_offsets()
+{
+    Serial.print("Loading LASER_ALIGNMENT_OFFSET from memory... ");
+    EEPROM.get(LASER_ALIGNMENT_ADDRESS, LASER_ALIGNMENT_OFFSET);
+    Serial.println(LASER_ALIGNMENT_OFFSET);
+    if (abs(LASER_ALIGNMENT_OFFSET - DEFAULT_LASER_ALIGNMENT_OFFSET) > EEPROM_TOLERANCE)
     {
-        Serial.println("Robot has not been calibrated yet");
-        return true;
+      Serial.println("ERROR: EEPROM stored value for LASER appears to be incorrect");
+      Serial.println("    Using default value: " + String(DEFAULT_LASER_ALIGNMENT_OFFSET));
     }
+
+    Serial.print("Loading GLUE_ALIGNMENT_OFFSET from memory... ");
+    EEPROM.get(GLUE_ALIGNMENT_ADDRESS, GLUE_ALIGNMENT_OFFSET);
+    Serial.println(GLUE_ALIGNMENT_OFFSET);
+    if (abs(GLUE_ALIGNMENT_OFFSET - DEFAULT_GLUE_ALIGNMENT_OFFSET) > EEPROM_TOLERANCE)
+    {
+      Serial.println("ERROR: EEPROM stored value for GLUE appears to be incorrect");
+      Serial.println("    Using default value: " + String(DEFAULT_GLUE_ALIGNMENT_OFFSET));
+    }
+
+    Serial.print("Loading PRESS_ALIGNMENT_OFFSET from memory... ");
+    EEPROM.get(PRESS_ALIGNMENT_ADDRESS, PRESS_ALIGNMENT_OFFSET);
+    Serial.println(PRESS_ALIGNMENT_OFFSET);
+    if (abs(PRESS_ALIGNMENT_OFFSET - DEFAULT_PRESS_ALIGNMENT_OFFSET) > EEPROM_TOLERANCE)
+    {
+      Serial.println("ERROR: EEPROM stored value for PRESS appears to be incorrect");
+      Serial.println("    Using default value: " + String(DEFAULT_PRESS_ALIGNMENT_OFFSET));
+    }
+}
+
+
+// /**
+//     Return whether or not the robot currently has any errors
+
+//     @return bool has_errors is true if there are any errors, otherwise false
+// */
+// bool Robot::has_errors()
+// {
+//     if (num_errors == -1)   //robot hasn't been calibrated yet
+//     {
+//         Serial.println("Robot has not been calibrated yet");
+//         return true;
+//     }
     
-    //update errors if glue or wire is out
-    // num_errors += check_glue();
-    num_errors += check_wire();
+//     //update errors if glue or wire is out
+//     // num_errors += check_glue();
+//     num_errors += check_wire();
 
-    if (num_errors > 0) 
-    {
-        Serial.println("Robot has errors. Please recalibrate before continuing");
-        return true;
-    }
-    else    //no errors occured
-    {
-        return false;
-    }
-}
+//     if (num_errors > 0) 
+//     {
+//         Serial.println("Robot has errors. Please recalibrate before continuing");
+//         return true;
+//     }
+//     else    //no errors occured
+//     {
+//         return false;
+//     }
+// }

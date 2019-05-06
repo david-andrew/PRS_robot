@@ -48,6 +48,7 @@ public:
 	PressModule();
 
     int calibrate();                    //raise the press, rotate to the minimum limit, and set as origin 
+    int check_errors();                 //check how many errors the press module currently has
     void press_slot();                  //perform all steps to press a fret
     bool has_wire();                    //check if there is still wire in the press feed
     void reset();                       //reset the press to a good starting position
@@ -62,6 +63,7 @@ public:
 
 
 private:
+    int num_errors = -1;
 };
 
 #endif

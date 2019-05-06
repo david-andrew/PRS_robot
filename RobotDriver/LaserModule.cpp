@@ -45,6 +45,8 @@ int LaserModule::calibrate()
 {
     Serial.println("Calibrating Laser Sensor");
 
+    num_errors = 0;
+
     int num_samples = 10000; //number of samples for low/high calibration
 
     //record the response with the laser off
@@ -75,14 +77,30 @@ int LaserModule::calibrate()
     {
         //failed to sense the laser properly
         Serial.println("Error: Laser calibration failed! Laser is either misaligned or obsructed.");
-        return 1; 
+        num_errors += 1; 
     }
-    
-    //set the nominal ambient/active response values for the laser
-    AMBIENT_RESPONSE = low_response;
-    ACTIVE_RESPONSE = high_response;
+    else
+    {
+        //set the nominal ambient/active response values for the laser
+        AMBIENT_RESPONSE = low_response;
+        ACTIVE_RESPONSE = high_response;
+    }
+    return check_errors();
+}
 
-    return 0;   //successful calibration
+
+/**
+    Check if any errors occured during calibration, and the module needs to be recalibrated
+*/
+int LaserModule::check_errors()
+{
+    if (num_errors = -1)
+    {
+        Serial.println("Error: LaserModule hasn't been calibrated yet. Please calibrate before running robot");
+        return 1;
+    }
+
+    return num_errors;
 }
 
 
@@ -164,8 +182,8 @@ void LaserModule::detect_slots(bool print)
 
     if (end_of_board) { return; } //only detect slots if it is not the end of the board
 
-    response = analogRead(PIN_LASER_SENSOR) - AMBIENT_RESPONSE;       //get the current laser reading
-    long index = slide_module->motor->get_current_position();   //current position of the slide motor
+    response = analogRead(PIN_LASER_SENSOR) - AMBIENT_RESPONSE;     //get the current laser reading
+    long index = slide_module->motor->get_current_position();       //current position of the slide motor
   
     switch (state)
     {

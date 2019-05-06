@@ -62,6 +62,7 @@ public:
     LaserModule(SlideModule* slide_module);
 
     int calibrate();                        //calibrate the laser module. return status of calibration
+    int check_errors();                     //check how many errors occured during calibration
     void write(uint8_t state);              //turn the laser on or off
     void toggle();                          //toggle the current state of the laser emitter
     uint8_t read();                         //get the current state of the laser emitter
@@ -102,6 +103,8 @@ private:
     };
 
     laser_states state = WAIT_START;        //initialize the laser sensor as waiting to see the fret board.
+
+    int num_errors = -1;                         //keep track of any errors that occurred during calibration
 };
 
 #endif

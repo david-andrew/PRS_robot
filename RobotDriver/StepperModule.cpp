@@ -58,6 +58,7 @@ int StepperModule::calibrate()
     }
     if (min_limit->read() == LOW || max_limit->read() == HIGH) 
     {
+        Serial.println("Error: " + name + " motor never reached minimum limit switch. Recalibration required");
         return 1;               //error, min limit never reached, or pressed max limit 
     }
     delay(500);                 //delay to stop momentum
@@ -158,6 +159,7 @@ void StepperModule::move_absolute(long absolute, bool block)
     Command the motor to move to the specified relative position
 
     @param long relative is the number of steps relative to the current location
+    @param (optional) bool block specifies if the robot should return immediatley or block while moving. Default is false
 */
 void StepperModule::move_relative(long relative, bool block)
 {

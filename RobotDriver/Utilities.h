@@ -71,6 +71,7 @@
         gg       - "glue go"                starts laying the glue
         gp       - "glue pause"             stops laying the glue
         gq       - "glue queary"            print out the current state of the glue_module (i.e. motor step position, and glue pneumatics state)
+        go<int>  - "glue offset"            add the specified integer to GLUE_ALIGNMENT_OFFSET
 
         <ENTER> with no text will stop the glue stepper and stop the glue pneumatics
 
@@ -84,6 +85,7 @@
         pl       - "press lower"            lowers the press arm
         pr       - "press raise"            raises the press arm
         pq       - "press queary"           print out the current state of the press_module (i.e. motor step position, and press and snips pneumatics states)
+        po<int>  - "press offset"           add the specified integer to PRESS_ALIGNMENT_OFFSET
 
         <ENTER> with no text will stop the press stepper, open the snips and raise the press arm
 
@@ -103,6 +105,7 @@
         lh       - "laser high"             turns the laser on
         ll       - "laser low"              turns the laser off
         lq       - "laser queary"           print the current state of the laser emitter and sensor
+        lo<int>  - "laser offset"           add the specified integer to LASER_ALIGNMENT_OFFSET
     
         <ENTER> with no text will turn the laser off
 
@@ -116,6 +119,8 @@
         rb       - "robot both"             perform both fret gluing and pressing along the entire board
         ra       - "robot all"              perform the entire fret press process (calibrate, reset, detect, glue/press) for a single fret board
         rq       - "robot queary"           print out the current state of the robot
+        rs       - "robot save"             save the current ALIGNMENT_OFFSET variables to EEPROM
+        rl       - "robot load"             load ALIGNMENT_OFFSET variables from EEPROM
 
         WARNING: <ENTER> for all of the robot commands will have no effect as each commands blocks until they are finished
 */
@@ -132,7 +137,7 @@ private:
     int buffer_index = 0;                       //current index to write characters into buffer
 
     bool read_serial();                         //store serial input into a buffer. Returns true if command available, else false
-    long get_buffer_num(int i);                 //get any numbers at the end of the buffer
+    long get_buffer_num(int i=2);               //get any numbers at the end of the buffer
     void kill_command();                        //command for stopping all actuators on the robot
     void slide_command();                       //commands for controlling the slide module
     void press_command();                       //commands for controlling the press module

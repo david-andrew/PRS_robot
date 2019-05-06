@@ -32,15 +32,40 @@ GlueModule::GlueModule()
 
 
 /**
-    Wrapper to calibrate the glue stepper motor step position
+    Wrapper to calibrate the glue stepper motor step position. Also check if the glue needs to be refilled
 
     @return int result is whether or not calibration succeeded. 0 for success, 1 for failure
 */
 int GlueModule::calibrate()
 {
-    return motor->calibrate();
+    num_errors = 0;
+    num_errors += motor->calibrate();
+    return check_errors();
 }
 
+
+/**
+    Check if any errors occured during calibration, and the module needs to be recalibrated
+*/
+int GlueModule::check_errors()
+{
+    if (num_errors = -1)
+    {
+        Serial.println("Error: GlueModule hasn't been calibrated yet. Please calibrate before running robot");
+        return 1;
+    }
+
+    //check glue weight to see if empty
+    //num_errors += !GlueWeightModule->has_glue();
+
+    return num_errors;
+}
+
+
+
+/**
+    Check how many errors the glue 
+*/
 
 // /**
 //     Wrapper to plot IR sensor for serial plotter

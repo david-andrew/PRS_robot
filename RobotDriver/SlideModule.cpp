@@ -32,7 +32,24 @@ SlideModule::SlideModule()
 */
 int SlideModule::calibrate()
 {
-    return motor->calibrate();
+    num_errors = 0;
+    num_errors += motor->calibrate();
+    return check_errors();
+}
+
+
+/**
+    Check if any errors occured during calibration, and the module needs to be recalibrated
+*/
+SlideModule::check_errors()
+{
+    if (num_errors = -1)
+    {
+        Serial.println("Error: SlideModule hasn't been calibrated yet. Please calibrate before running robot");
+        return 1;
+    }
+
+    return num_errors;
 }
 
 

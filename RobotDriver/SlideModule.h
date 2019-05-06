@@ -60,6 +60,7 @@ public:
     SlideModule();
     
     int calibrate();                                        //move the slide to the mimimum limit switch and set the position to zero
+    int check_errors();
     void reset();                                           //reset the slide back to the start to prepare for the next board
 
     String str();                                           //get a string describing the current state of the slide module
@@ -69,7 +70,7 @@ public:
 
 
 private:
-    // StepperModule* slide_motor;                             //internal StepperModule object for controlling the slide stepper motor
+    int num_errors = -1;                                    //keep track of the number of errors that occured
 
 };
 
