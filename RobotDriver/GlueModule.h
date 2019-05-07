@@ -29,7 +29,7 @@
 #define PIN_GLUE_PULSE 5                    //pulse pin connected to the glue stepper motor controller
 #define PIN_GLUE_DIRECTION 4                //direction pin connected to the glue stepper motor controller
                                                 
-#define CENTER_POSITION 7400                //step position of the center of the board
+#define CENTER_POSITION 6500                //step position of the center of the board
 #define MIN_ARC_LENGTH 5300                 //arc length of the narrowest portion of the fretboard
 #define MAX_ARC_LENGTH 6900                 //arc length of the widest portion of the fretboard
 // #define GLUE_BACKLASH 100//1000                   //amount of backlash in the motor connection in steps

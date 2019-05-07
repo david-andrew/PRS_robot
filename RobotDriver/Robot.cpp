@@ -32,6 +32,7 @@ Robot::Robot()
     load_offsets();
 }
 
+
 /**
     Run all calibration process on the robot, and keep track of number of errors
 
@@ -51,15 +52,20 @@ int Robot::calibrate()
 /**
     Check how many errors are currently present in each module. Don't run the robot unless this is 0
 
+    @param (optional) bool laser indicates if the laser module should be checked. Default true
+    @param (optional) bool slide indicates if the slide module should be checked. Default true
+    @param (optional) bool glue indicates if the glue module should be checked. Default true
+    @param (optional) bool press indicates if the press module should be checked. Default true
+
     @return int num_errors is the sum of all errors that occurred in each of the modules
 */
-int Robot::check_errors()
+int Robot::check_errors(bool laser, bool slide, bool glue, bool press)
 {
-    int num_errors = 0;                         //number of errors encountered during calibration
-    num_errors += slide_module->check_errors(); //check if slide was calibrated
-    num_errors += glue_module->check_errors();  //check if glue was calibrated, and if glue needs to be refilled
-    num_errors += press_module->check_errors(); //check if press was calibrated, and if fret wire needs to be added
-    num_errors += laser_module->check_errors(); //check if laser was aligned properly
+    int num_errors = 0;                                         //number of errors encountered during calibration
+    if (laser) { num_errors += laser_module->check_errors(); }  //check if laser was aligned properly 
+    if (slide) { num_errors += slide_module->check_errors(); }  //check if slide was calibrated
+    if (glue)  { num_errors += glue_module->check_errors();  }  //check if glue was calibrated, and if glue needs to be refilled
+    if (press) { num_errors += press_module->check_errors(); }  //check if press was calibrated, and if fret wire needs to be added
 
     if (num_errors > 0)
     {
@@ -69,6 +75,7 @@ int Robot::check_errors()
     return num_errors;
 }
 
+
 /**
     Move the fretboard along the track and detect the locations of all fret slots
 
@@ -77,8 +84,13 @@ int Robot::check_errors()
 */
 int Robot::detect_slots()
 {
-    if (check_errors() > 0) { return; } //cancel fret detection process if there are errors
+    //check if laser and slide modules have errors
+    if (check_errors(true, true, false, false))     //check only the slide and laser module (press/glue not needed for this process)
+    { 
+        return;                                     //cancel fret detection process if there are errors
+    }
 
+    //run fret slot detection process
     Serial.println("Detecting slots on fret board");
     laser_module->write(HIGH);                      //turn on the laser emitter
     slide_module->motor->move_relative(LONG_MAX);   //command the slide motor to a very far position forward
@@ -97,7 +109,7 @@ int Robot::detect_slots()
     //perform check to see if slots detected match existing board models
     Serial.println("Detected " + String(num_slots) + " slots");
 
-    return 0;   //for now return success. TODO->make this return 1 if detection doesn't match an existing board
+    return 0;   //for now return success. TODO: have a warning if the board detected doesn't match either the 22 or 24 fret board
 }
 
 
@@ -148,7 +160,6 @@ void Robot::press_frets()
         if (index >= num_slots) { break; } //if last group, exit loop
     }
 }
-
 
 
 /**
@@ -264,32 +275,3 @@ void Robot::load_offsets()
       Serial.println("    Using default value: " + String(DEFAULT_PRESS_ALIGNMENT_OFFSET));
     }
 }
-
-
-// /**
-//     Return whether or not the robot currently has any errors
-
-//     @return bool has_errors is true if there are any errors, otherwise false
-// */
-// bool Robot::has_errors()
-// {
-//     if (num_errors == -1)   //robot hasn't been calibrated yet
-//     {
-//         Serial.println("Robot has not been calibrated yet");
-//         return true;
-//     }
-    
-//     //update errors if glue or wire is out
-//     // num_errors += check_glue();
-//     num_errors += check_wire();
-
-//     if (num_errors > 0) 
-//     {
-//         Serial.println("Robot has errors. Please recalibrate before continuing");
-//         return true;
-//     }
-//     else    //no errors occured
-//     {
-//         return false;
-//     }
-// }
