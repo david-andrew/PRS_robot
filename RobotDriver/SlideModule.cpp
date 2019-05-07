@@ -43,10 +43,14 @@ int SlideModule::calibrate()
 */
 SlideModule::check_errors()
 {
-    if (num_errors = -1)
+    if (num_errors == -1)
     {
-        Serial.println("Error: SlideModule hasn't been calibrated yet. Please calibrate before running robot");
+        Serial.println("ERROR: SlideModule hasn't been calibrated yet. Please calibrate before running robot");
         return 1;
+    }
+    else if (num_errors > 0)
+    {
+        Serial.println("ERROR: SlideModule encountered errors. Please ensure slide is clear of debris and plugged in correctly");
     }
 
     return num_errors;

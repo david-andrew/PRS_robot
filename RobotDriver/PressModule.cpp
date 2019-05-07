@@ -50,14 +50,19 @@ int PressModule::calibrate()
 */
 int PressModule::check_errors()
 {
-    if (num_errors = -1)
+    if (num_errors == -1)
     {
-        Serial.println("Error: PressModule hasn't been calibrated yet. Please calibrate before running robot");
+        Serial.println("ERROR: PressModule hasn't been calibrated yet. Please calibrate before running robot");
         return 1;
     }
-    
+
     //check if there is wire in the feed
     num_errors += !has_wire();
+
+    if (num_errors > 0)
+    {
+        Serial.println("ERROR: PressModule encountered errors. Please ensure press is clear of debris and plugged in correctly");
+    }
 
     return num_errors;
 }
@@ -69,9 +74,8 @@ void PressModule::press_slot()
 {
     if (!has_wire())    //check if wire is still remaining
     {
-        Serial.println("Error: out of fret wire. Skipping press step");
         delay(500);     //pause to stop slide momentum
-        return;
+        return;         //return before attempting to press with no wire
     }
 
     motor->move_absolute(PRESS_PRESS_POSITION, true);   //rotate the press arm to the position it will press the frets
@@ -94,7 +98,15 @@ void PressModule::press_slot()
 */
 bool PressModule::has_wire()
 {
-    return feed_detect->read(true) == HIGH; //satureate the feed limit, and then check if the fret wire is still there
+    if (feed_detect->read(true) == HIGH) //satureate the feed limit, and then check if the fret wire is still there
+    {
+        return true;
+    }
+    else
+    {
+        Serial.println("ERROR: out of fret wire. Please reload more");
+        return false;
+    }
 }
 
 
@@ -105,7 +117,7 @@ void PressModule::reset()
 {
     snips->write(LOW);                                  //open the snips
     press->write(HIGH);                                 //raise the press
-    motor->move_absolute(PRESS_SNIPS_POSITION, true);   //move clear and wait till
+    motor->move_absolute(PRESS_CLEAR_POSITION, true);   //move clear and wait till
 }
 
 

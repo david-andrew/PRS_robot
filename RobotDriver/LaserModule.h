@@ -18,8 +18,8 @@
 #define PIN_LASER_SENSOR A15        //pin for sensing the laser beam
 
 #define MAX_SLOTS 256               //god help you if this isn't big enough
-#define UPPER_TRIGGER 200            //signal must be at least this high to trigger the SENSE_POSITIVE state
-#define LOWER_TRIGGER 100            //signal must be at least this low to trigger SENSE_NEGATIVE or WAIT_START
+#define UPPER_TRIGGER 200           //signal must be at least this high to trigger the SENSE_POSITIVE state
+#define LOWER_TRIGGER 100           //signal must be at least this low to trigger SENSE_NEGATIVE or WAIT_START
 
 #define VISIBLE_THRESHOLD 800       //required minimum difference between ambient/active response to sense the laser
 extern int AMBIENT_RESPONSE;        //default ambient response of the sensor (i.e. laser turned OFF). Can be set via calibration
@@ -38,18 +38,18 @@ extern int ACTIVE_RESPONSE;         //default active response of the sensor (i.e
     Example Usage:
     
     ```
-    SlideModule slide = SlideModule();      //create a slide module for the laser to reference
-    LaserModule laser = LaserModule(slide.get_stepper_reference());
+    SlideModule* slide = new SlideModule();  //create a slide module for the laser to reference
+    LaserModule* laser = new LaserModule(slide);
     
     setup()
     {
-        laser.calibrate();
+        laser->calibrate();
         //<start the slide motor in motion>
     }
 
     loop()
     {
-        laser.detect_slots()                //needs to be called once per loop to run the laser sensor
+        laser->detect_slots()               //needs to be called once per loop to run the laser sensor
                                             //slots detected are stored in laser.get_slot_positions();
                                             //number of slots found is stored in laser.get_num_slots();
     }

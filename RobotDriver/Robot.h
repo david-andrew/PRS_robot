@@ -23,9 +23,9 @@
 
 #define DEFAULT_LASER_ALIGNMENT_OFFSET -52      //default laser alignment value if EEPROM values are wrong
 #define LASER_ALIGNMENT_ADDRESS 0               //byte address of the laser alignmnet offset in EEPROM
-#define DEFAULT_GLUE_ALIGNMENT_OFFSET 4436      //default glue alignment value if EEPROM values are wrong
+#define DEFAULT_GLUE_ALIGNMENT_OFFSET 4163      //default glue alignment value if EEPROM values are wrong
 #define GLUE_ALIGNMENT_ADDRESS 4                //byte address of the glue alignment offset in EEPROM
-#define DEFAULT_PRESS_ALIGNMENT_OFFSET 13510    //default press alignment ovalue if EEPROM values are wrong
+#define DEFAULT_PRESS_ALIGNMENT_OFFSET 13480    //default press alignment ovalue if EEPROM values are wrong
 #define PRESS_ALIGNMENT_ADDRESS 8               //byte address of the press alignmnet offset in EEPROM
 #define EEPROM_TOLERANCE 500                    //if the value in EEPROM memory deviates more than this much, use default instead
 

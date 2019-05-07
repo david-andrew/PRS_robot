@@ -31,7 +31,7 @@
 #define PIN_FEED_DETECT 31
 
 #define PRESS_DURATION 1000               //duration to apply force to the fret in the slot
-// #define PRESS_CLEAR_POSITION 4000       //position at which the press arm is clear of the fretboard and snips
+#define PRESS_CLEAR_POSITION 5000       //position at which the press arm is clear of the fretboard and snips
 #define PRESS_SNIPS_POSITION 3500       //position at which the press arm retracts to to let the snips cut the fret has_wire
 #define PRESS_PRESS_POSITION 0          //position the press moves to to press the fret wire into the board
 
@@ -39,7 +39,7 @@
 #define PIN_SNIPS_CLOSE 13              //pin for closing glue pneumatics solenoid, i.e. laying glue
 #define SNIPS_DEFAULT LOW               //default starting state for glue (stopped)
 
-#define PNEUMATICS_DELAY 500            //amount of time it take the pneumatics to acuate
+#define PNEUMATICS_DELAY 800            //amount of time it take the pneumatics to acuate
 
 class PressModule
 {

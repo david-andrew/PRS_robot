@@ -76,7 +76,6 @@ int LaserModule::calibrate()
     if (high_response - low_response < VISIBLE_THRESHOLD) 
     {
         //failed to sense the laser properly
-        Serial.println("Error: Laser calibration failed! Laser is either misaligned or obsructed.");
         num_errors += 1; 
     }
     else
@@ -94,12 +93,15 @@ int LaserModule::calibrate()
 */
 int LaserModule::check_errors()
 {
-    if (num_errors = -1)
+    if (num_errors == -1)
     {
-        Serial.println("Error: LaserModule hasn't been calibrated yet. Please calibrate before running robot");
+        Serial.println("ERROR: LaserModule hasn't been calibrated yet. Please calibrate before running robot");
         return 1;
     }
-
+    else if (num_errors > 0)
+    {
+        Serial.println("ERROR: Laser module encountered errors. Please ensure laser beam properly aligned and unobstructed");
+    }
     return num_errors;
 }
 

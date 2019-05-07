@@ -61,6 +61,11 @@ int Robot::check_errors()
     num_errors += press_module->check_errors(); //check if press was calibrated, and if fret wire needs to be added
     num_errors += laser_module->check_errors(); //check if laser was aligned properly
 
+    if (num_errors > 0)
+    {
+        Serial.println("PLEASE CORRECT ERRORS AND RECALIBRATE BEFORE CONTINUING");
+    }
+
     return num_errors;
 }
 
@@ -136,6 +141,8 @@ void Robot::press_frets()
             slide_module->motor->move_absolute(target, true);
             press_module->press_slot();
         }
+        press_module->reset();
+        delay(1000);//delay so that the
         
         index += SLOT_GROUP_SIZE; //move to the next group of slots
         if (index >= num_slots) { break; } //if last group, exit loop

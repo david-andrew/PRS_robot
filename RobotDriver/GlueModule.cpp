@@ -49,14 +49,19 @@ int GlueModule::calibrate()
 */
 int GlueModule::check_errors()
 {
-    if (num_errors = -1)
+    if (num_errors == -1)
     {
-        Serial.println("Error: GlueModule hasn't been calibrated yet. Please calibrate before running robot");
+        Serial.println("ERROR: GlueModule hasn't been calibrated yet. Please calibrate before running robot");
         return 1;
     }
 
     //check glue weight to see if empty
     //num_errors += !GlueWeightModule->has_glue();
+
+    if (num_errors > 0)
+    {
+        Serial.println("ERROR: GlueModule encountered errors. Please ensure glue arm is clear of debris and plugged in correctly");
+    }
 
     return num_errors;
 }
