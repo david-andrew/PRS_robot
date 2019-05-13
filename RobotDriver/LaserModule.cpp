@@ -269,7 +269,16 @@ void LaserModule::reset()
     num_slots = 0;          //to clear the buffer, simply set number of slots to 0
     end_of_board = false;   //for a new board, we have not yet seen the end
     state = WAIT_START;     //inital state the sensor is for sensing a new board
-    write(LOW);
+    
+    //if no error, turn of laser, else leave on
+    if (num_errors == 0) 
+    {
+        write(LOW);
+    }
+    else
+    {
+        write(HIGH);
+    }
 }
 
 
