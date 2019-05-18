@@ -20,5 +20,5 @@ This code is used to control the Fret Press Robot developed by JHU Senior Design
 2. Open Serial Monitor to Arduino Mega (Baud Rate: 115200)
 3. Turn on power to the robot
 4. Wait for all components to stop moving (calibration process)
-5. Enter desired commands via the Serial Monitor. (Commands are described in `robot_driver_v2\Utilities.h`)
+5. Enter desired commands via the Serial Monitor. (Commands are described in `RobotDriver\Utilities.h`)
 
