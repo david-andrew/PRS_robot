@@ -1,0 +1,10 @@
+Data stored in EEPROM on arduino (decimal addresses):
+0    LASER_ALIGNMENT_OFFSET (int32_t)
+4    GLUE_ALIGNMENT_OFFSET (int32_t)
+8    PRESS_ALIGNMENT_OFFSET (int32_t)
+
+
+Potential future implementations
+SLOT_BATCH_SIZE (uint8_t)
+glue arm limits, arc size, etc. (int32_t)
+others?

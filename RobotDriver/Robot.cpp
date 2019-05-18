@@ -140,7 +140,7 @@ int Robot::detect_slots()
 */
 void Robot::press_frets()
 {
-    if (check_errors() > 0) { return; }                     //cancel fret press/cut process if there are errors
+    if (check_errors() > 0) { return; }                 //cancel fret press/cut process if there are errors
 
     Serial.println("Gluing and pressing frets into all slots");
     int index = 0;                                      //start of the current group of frets
@@ -149,12 +149,12 @@ void Robot::press_frets()
 
     while (true)
     {
-        if (check_errors() > 0) { break; }                    //if the robot has any errors, stop the sequence
+        if (check_errors() > 0) { break; }              //if the robot has any errors, stop the sequence
         
         //glue group loop
-        for (int i = 0; i < SLOT_GROUP_SIZE; i++)       //loop through the group for glue
+        for (int i = 0; i < SLOT_BATCH_SIZE; i++)       //loop through the group for glue
         {
-            if (check_errors() > 0) { break; }                //break loop if the robot has errors
+            if (check_errors() > 0) { break; }          //break loop if the robot has errors
             if (index + i >= num_slots) { break; }      //break loop if at the end of the frets
             
             //go to the next glue slot and lay glue in the slot
@@ -165,9 +165,9 @@ void Robot::press_frets()
         glue_module->reset();                           //move the glue module out of the way of the fret board clamp
         
         //press/cut group loop
-        for (int i = 0; i < SLOT_GROUP_SIZE; i++)       //loop through the group for press
+        for (int i = 0; i < SLOT_BATCH_SIZE; i++)       //loop through the group for press
         {
-            if (check_errors() > 0) { break; }                //break loop if the robot has errors
+            if (check_errors() > 0) { break; }          //break loop if the robot has errors
             if (index + i >= num_slots) { break; }      //break loop if at the end of the frets
             
             //go to next press slot and press/cut the fret in the slot
@@ -176,10 +176,10 @@ void Robot::press_frets()
             press_module->press_slot();
         }
         press_module->reset();
-        delay(1000);//delay so that the
+        delay(1000);                                    //delay so that the slide doesn't start moving until after the wire has settled after being snipped
         
-        index += SLOT_GROUP_SIZE; //move to the next group of slots
-        if (index >= num_slots) { break; } //if last group, exit loop
+        index += SLOT_BATCH_SIZE;                       //move to the next group of slots
+        if (index >= num_slots) { break; }              //if last group, exit loop
     }
 }
 

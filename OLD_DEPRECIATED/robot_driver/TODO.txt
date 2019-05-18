@@ -1,2 +1,0 @@
-update the style of all files according to 
-http://www.edparrish.net/common/cppdoc.html

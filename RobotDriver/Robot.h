@@ -51,7 +51,8 @@
 #define PRESS_ALIGNMENT_ADDRESS 8                   //byte address of the press alignmnet offset in EEPROM
 #define EEPROM_TOLERANCE 500                        //if the value in EEPROM memory deviates more than this much, use default instead
 
-#define SLOT_GROUP_SIZE 3                           //number of slots to press/glue at a time.
+//#define DEFAULT_BATCH_SIZE 3 //use so that batch size can be updated
+#define SLOT_BATCH_SIZE 3                           //number of slots to press/glue at a time.
 // #define CLIP_LOCATION 12/13 14/15                   //some way of locating the clip clamping the fretboard
 
 
@@ -89,6 +90,8 @@ public:
     int32_t LASER_ALIGNMENT_OFFSET;                 //number of steps offset from slot positions to the laser axis location
     int32_t GLUE_ALIGNMENT_OFFSET;                  //number of steps offset from slot positions to the glue needle location
     int32_t PRESS_ALIGNMENT_OFFSET;                 //number of steps offset from slot positions to the press arm location
+
+    // uint8_t SLOT_BATCH_SIZE;                        //number of frets in a batch glued and pressed at a time
 
 private:
     // bool has_errors();                              //check if there are any errors currently in the robot

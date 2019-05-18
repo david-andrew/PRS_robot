@@ -41,6 +41,8 @@
 // #define VISIBLE_THRESHOLD 800       //required minimum difference between ambient/active response to sense the laser
 
 
+
+//NOTE - CURRENTLY THIS CLASS IS NOT USED, AND NOT IMPLEMENTED COMPLETELY
 class IRModule
 {
 public:

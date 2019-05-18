@@ -133,6 +133,7 @@
 
     Robot Command Controls:
         rc       - "robot calibrate"        calibrate all device on robot in sequence
+        ///NOT-IMPLEMENTED//// rb<int>  - "robot batch (size)"     set the number of slots glued and pressed at a single time. Currently, a batch size of 3 or 4 at the maximum due to glue drying time
         re       - "robot error"            check for any errors on the robot (e.g. out of glue or fret wire).
         rr       - "robot reset"            reset all modules on the robot to the starting state
         rd       - "robot detect"           perform steps to detect all slots

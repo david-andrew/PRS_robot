@@ -457,6 +457,13 @@ void Utilities::robot_command()
             robot->calibrate();
             break;
         }
+        // case 'b':   //robot "batch" - set the batch size for number of frets pressed/glued at a time
+        // {
+        //     Serial.println("This function currently is not implemented. To update batch size, either manually change it in Robot.h, or complete this function");
+        //     // group = (int) get_buffer_num(2);                    //get the new batch size from buffer
+        //     // robot->update_group_size(group);                    //tell the robot to use the new size
+        //     break;
+        // }
         case 'e':   //robot "error" - check for errors in the robot, e.g. out of fret wire, out of glue, etc.
         {
             //consider refactoring this to not calibrate, and just check fret wire/glue
