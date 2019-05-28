@@ -31,7 +31,6 @@
 */
 
 #include "ButtonModule.h"
-#include <Arduino.h>
 
 /**
     Construct a new button object
