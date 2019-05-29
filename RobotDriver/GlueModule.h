@@ -77,7 +77,7 @@
 #define SCALE_DRY_WEIGHT_ADDRESS 12             //EEPROM address that SCALE_DRY_WEIGHT is stored at as a float (4 bytes wide)
 #define GLUE_CAPACITY 2600                      //capacity of glue container in grams (for the specific gravity of the current glue)
 #define GLUE_WARNING_THRESHOLD 0.15             //percentage of capacity at which a warning is printed for low glue
-#define GLUE_ERROR_THRESHOLD 0.05               //percentage of capacity at which the robot will not operate without more glue
+#define GLUE_ERROR_THRESHOLD 0.025              //percentage of capacity at which the robot will not operate without more glue
 
 class GlueModule
 {

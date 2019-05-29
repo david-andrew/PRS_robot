@@ -91,7 +91,7 @@ int Robot::check_errors(bool laser, bool slide, bool glue, bool press)
 
     if (num_errors > 0)
     {
-        Serial.println("PLEASE CORRECT ERRORS AND RECALIBRATE BEFORE CONTINUING");
+        Serial.println("PLEASE CORRECT ERRORS AND RECALIBRATE/REBOOT ROBOT BEFORE CONTINUING");
     }
 
     return num_errors;
@@ -192,8 +192,8 @@ void Robot::reset()
     Serial.println("Resetting components on the robot");
 
     //reset the top level modules
-    press_module->reset();
     glue_module->reset();
+    press_module->reset();
     slide_module->reset();
 
     //reset the laser module
