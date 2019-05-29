@@ -92,7 +92,8 @@
         gt       - "glue toggle"            toggles the current state of the glue
         gg       - "glue go"                starts laying the glue
         gp       - "glue pause"             stops laying the glue
-        gq       - "glue queary"            print out the current state of the glue_module (i.e. motor step position, and glue pneumatics state)
+        gq       - "glue queary"            print out the current state of the glue_module (i.e. motor step position, glue pneumatics state, and current glue weight)
+        gw       - "glue weight"            set the current weight to be the glue dry weight (i.e. subtracted off of all readings)
         go<int>  - "glue offset"            add the specified integer to GLUE_ALIGNMENT_OFFSET
 
         <ENTER> with no text will stop the glue stepper and stop the glue pneumatics

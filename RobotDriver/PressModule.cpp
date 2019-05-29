@@ -139,7 +139,8 @@ void PressModule::reset()
 {
     snips->write(LOW);                                  //open the snips
     press->write(HIGH);                                 //raise the press
-    motor->move_absolute(PRESS_CLEAR_POSITION, true);   //move clear and wait till
+    motor->move_absolute(PRESS_CLEAR_POSITION, true);   //move clear and block till finished
+    check_errors();                                     //check if there is still wire in the press arm
 }
 
 

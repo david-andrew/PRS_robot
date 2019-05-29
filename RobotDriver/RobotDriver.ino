@@ -60,6 +60,7 @@ void loop()
     robot->detect_slots();
     robot->press_frets();
     robot->reset();
+    Serial.println("Waiting for START BUTTONS or SERIAL COMMANDS");
   }
   else
   {

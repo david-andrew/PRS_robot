@@ -2,6 +2,7 @@ Data stored in EEPROM on arduino (decimal addresses):
 0    LASER_ALIGNMENT_OFFSET (int32_t)
 4    GLUE_ALIGNMENT_OFFSET (int32_t)
 8    PRESS_ALIGNMENT_OFFSET (int32_t)
+12   SCALE_DEAD_WEIGHT (float) (i.e. 4 bytes)
 
 
 Potential future implementations

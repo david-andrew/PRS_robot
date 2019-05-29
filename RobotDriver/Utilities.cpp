@@ -356,6 +356,11 @@ void Utilities::glue_command()
             Serial.println(glue_module->str());
             break;
         }
+        case 'w':   //glue "weight" - calibrate the glue weight sensor dry weight
+        {
+            glue_module->calibrate_dry_weight();
+            break;
+        }
         case 'o':   //glue "offset" - update the GLUE_ALIGNMENT_OFFSET
         {
             int delta = get_buffer_num();
@@ -553,14 +558,16 @@ void Utilities::robot_command()
             robot->reset();
             break;
         }
-        case 's':   //robot "save" - save the ALIGNMENT_OFFSET variables to EEPROM
+        case 's':   //robot "save" - save the ALIGNMENT_OFFSET variables, and glue dry weight to EEPROM
         {
             robot->save_offsets();
+            glue_module->save_dry_weight();
             break;
         }
-        case 'l':   //robot "load" - load the ALIGNMENT_OFFSET variables from EEPROM
+        case 'l':   //robot "load" - load the ALIGNMENT_OFFSET variables, and glue dry weight from EEPROM
         {
             robot->load_offsets();
+            glue_module->load_dry_weight();
             break;
         }
         default: Serial.println("Unrecognized command for laser: \"" + String(action) + "\"");

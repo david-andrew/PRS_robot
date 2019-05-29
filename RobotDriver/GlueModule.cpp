@@ -31,6 +31,7 @@
 */
 
 #include "GlueModule.h"
+#include <EEPROM.h>
 
 
 /**
@@ -50,6 +51,10 @@ GlueModule::GlueModule()
 
     //Initialize the IR sensor
     // IR_sensor = new IRModule();
+
+    //initialize the glue weight sensor, and load the dry weight from EEPROM
+    glue_weight = new HX711(PIN_SCALE_DOUT, PIN_SCALE_PD_SCK, SCALE_GAIN);
+    load_dry_weight();
 }
 
 
@@ -62,14 +67,14 @@ int GlueModule::calibrate()
 {
     num_errors = 0;
     num_errors += motor->calibrate();
-    return check_errors();
+    return check_errors(true);          //definitely check if there is glue remaning during calibration
 }
 
 
 /**
     Check if any errors occured during calibration, and the module needs to be recalibrated
 */
-int GlueModule::check_errors()
+int GlueModule::check_errors(bool check_weight)
 {
     if (num_errors == -1)
     {
@@ -77,12 +82,15 @@ int GlueModule::check_errors()
         return 1;
     }
 
-    //check glue weight to see if empty
-    //num_errors += !GlueWeightModule->has_glue();
+    //check glue weight to see if empty, only if specified. Checking glue weight takes a long time due to high sensor variance
+    if (check_weight)
+    {
+        num_errors += !has_glue();
+    }
 
     if (num_errors > 0)
     {
-        Serial.println("ERROR: GlueModule encountered errors. Please ensure glue arm is clear of debris and plugged in correctly");
+        Serial.println("ERROR: GlueModule encountered errors. Please ensure glue motor plugged in correctly, and glue is not empty");
     }
 
     return num_errors;
@@ -151,9 +159,108 @@ void GlueModule::glue_slot()
 */
 void GlueModule::reset()
 {
-    motor->move_absolute(GLUE_CLEAR_POSITIVE, true);      //(blocking) move to a position clear of the fretboard and clamp
+    motor->move_absolute(GLUE_CLEAR_POSITIVE, true);    //(blocking) move to a position clear of the fretboard and clamp
     glue->write(LOW);
+    check_errors(true);                                 //check if there is adequate glue left for another job
 }
+
+
+/**
+    Load the saved dry weight from EEPROM
+*/
+void GlueModule::load_dry_weight()
+{
+    Serial.print("Loading SCALE_DRY_WEIGHT from memory... ");
+    EEPROM.get(SCALE_DRY_WEIGHT_ADDRESS, SCALE_DRY_WEIGHT);
+    Serial.println(SCALE_DRY_WEIGHT);
+}
+
+
+/**
+    Record the current weight on the glue sensor and set as the new dry weight
+*/
+void GlueModule::calibrate_dry_weight()
+{
+    Serial.println("Setting new scale dry weight...");
+    SCALE_DRY_WEIGHT = read_raw_weight(100);    //take a rolling average over 100 samples
+    Serial.println("Recorded dry weight: " + String(SCALE_DRY_WEIGHT) + " grams");
+}
+
+
+/**
+    Save the current dry weight to EEPROM
+*/
+void GlueModule::save_dry_weight()
+{
+    Serial.println("Writing SCALE_DRY_WEIGHT (" + String(SCALE_DRY_WEIGHT) + ") to EEPROM");
+    EEPROM.put(SCALE_DRY_WEIGHT_ADDRESS, SCALE_DRY_WEIGHT);
+}
+
+
+/**
+    Get the weight reading from the sensor without subtracting the dry weight
+
+    @param (optional) int samples is the number of samples to average the weight over. Default is 1 (i.e. no averaging)
+
+    @return float weight is the current weight reading (grams) of the strain gauge 
+*/
+float GlueModule::read_raw_weight(int samples)
+{
+    //get initial single reading from the sensor
+    long raw = -glue_weight->read();                        //strain gauge is inverted
+    float weight = (raw - SCALE_OFFSET) / SCALE_SLOPE;      //convert raw reading to grams
+
+    float average = weight;                                 //set average as the first reading
+
+    //if more than 1 sample, take a rolling average
+    for (int i = 1; i < samples; i++)
+    {
+        raw = -glue_weight->read();                         //read strain gauge
+        weight = (raw - SCALE_OFFSET) / SCALE_SLOPE;        //convert raw reading to grams
+        average += (weight - average) / SCALE_WINDOW;       //update rolling average
+    }
+
+    return average;
+}
+
+
+/**
+    Get the current weight of glue remaining in the glue canister
+*/
+float GlueModule::read_glue_weight(int samples)
+{
+    return read_raw_weight(samples) - SCALE_DRY_WEIGHT;
+}
+
+
+/**
+    Check if there is still glue in the container
+
+    @return bool has_glue is true if there is more than 5% capacity of glue remaining
+*/
+bool GlueModule::has_glue()
+{
+    Serial.println("Checking glue remaining in reservoir...");
+    float weight = read_glue_weight(100);
+    float percentage = weight / GLUE_CAPACITY;
+    if (percentage > GLUE_WARNING_THRESHOLD)
+    {
+        Serial.println("Currently have " + String(percentage * 100, 1) + "% (" + String(weight) + "g) glue remaining");
+        return true;    //more than 15% glue remaining is plenty.
+    }
+    else if (percentage > GLUE_ERROR_THRESHOLD)
+    {
+        Serial.println("WARNING: Low glue. " + String(percentage * 100, 1) + "% (" + String(weight) + "g) detected. Please refill glue soon");
+        return true;    //5-15% percent glue is still enough to run, but issues a warning
+    }
+    else
+    {
+        Serial.println("ERROR: Out of glue. " + String(percentage * 100, 1) + "% (" + String(weight) + "g) detected. Refill REQUIRED before continuing");
+        return false;   //less than 5% glue requires that the glue be refilled before continued operation
+    }
+}
+
+
 
 
 /**
@@ -162,7 +269,8 @@ void GlueModule::reset()
 String GlueModule::str()
 {
     return "Glue Motor Position: " + String(motor->get_current_position()) +
-           "\nGlue Stream: " + String(glue->read() == HIGH ? "ON" : "OFF");
+           "\nGlue Stream: " + String(glue->read() == HIGH ? "ON" : "OFF") + 
+           "\nGlue Weight: " + String(read_glue_weight(100)) + " grams";
 }
 
 

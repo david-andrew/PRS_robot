@@ -85,11 +85,7 @@ SlideModule::check_errors()
 void SlideModule::reset()
 {
     //command the slide to the origin and wait for it to stop moving
-    motor->move_absolute(0);
-    while (motor->is_running())
-    {
-        motor->run();
-    }
+    motor->move_absolute(0, true);
 }
 
 
