@@ -67,7 +67,7 @@ int GlueModule::calibrate()
 {
     num_errors = 0;
     num_errors += motor->calibrate();
-    return check_errors(true);          //definitely check if there is glue remaning during calibration
+    return check_errors();              //don't check for glue remaining during calibration
 }
 
 

@@ -53,8 +53,8 @@ LaserModule::LaserModule(SlideModule* slide_module)
     pinMode(PIN_LASER_EMITTER, OUTPUT);
     pinMode(PIN_LASER_SENSOR, INPUT);
 
-    //deactivate laser until needed
-    write(LOW);
+    //laser default state is on
+    write(HIGH);
 }
 
 /**
@@ -91,8 +91,8 @@ int LaserModule::calibrate()
     high_response /= num_samples;
     Serial.println("Laser sensor HIGH response: " + String(high_response));
 
-    //turn the laser off for the end of calibration
-    write(LOW);
+    // //turn the laser off for the end of calibration
+    // write(LOW);
 
     //confirm that laser can see the sensor (i.e. high_response was much larger than low_response)
     if (high_response - low_response < VISIBLE_THRESHOLD) 
@@ -292,15 +292,16 @@ void LaserModule::reset()
     end_of_board = false;   //for a new board, we have not yet seen the end
     state = WAIT_START;     //inital state the sensor is for sensing a new board
     
-    //if no error, turn of laser, else leave on
-    if (num_errors == 0) 
-    {
-        write(LOW);
-    }
-    else
-    {
-        write(HIGH);
-    }
+    // //if no error, turn of laser, else leave on
+    // if (num_errors == 0) 
+    // {
+    //     write(LOW);
+    // }
+    // else
+    // {
+    //     write(HIGH);
+    // }
+    write(HIGH); //leave the laser on
 }
 
 

@@ -123,7 +123,7 @@ int Robot::detect_slots()
         laser_module->detect_slots(true);           //run the laser detection algorithm, and print out updates
     }
     slide_module->motor->stop();
-    laser_module->write(LOW);                       //turn off the laser
+    // laser_module->write(LOW);                       //turn off the laser
 
     slot_buffer = laser_module->get_slot_buffer();
     num_slots = laser_module->get_num_slots();
