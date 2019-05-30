@@ -162,8 +162,9 @@ void Robot::press_frets()
             slide_module->motor->move_absolute(target, true);
             glue_module->glue_slot();
         }
-        glue_module->reset();                           //move the glue module out of the way of the fret board clamp
-        
+        //glue_module->reset();                           //move the glue module out of the way of the fret board clamp
+        glue_module->motor->move_absolute(6100, true);  //move glue arm out of the way of the clip
+
         //press/cut group loop
         for (int i = 0; i < SLOT_BATCH_SIZE; i++)       //loop through the group for press
         {
