@@ -52,20 +52,20 @@
 #define PIN_GLUE_PULSE 5                        //pulse pin connected to the glue stepper motor controller
 #define PIN_GLUE_DIRECTION 4                    //direction pin connected to the glue stepper motor controller
                                                     
-#define CENTER_POSITION 6500                    //step position of the center of the board
-#define MIN_ARC_LENGTH 5300                     //arc length of the narrowest portion of the fretboard
-#define MAX_ARC_LENGTH 6900                     //arc length of the widest portion of the fretboard
-// #define GLUE_BACKLASH 100//1000                       //amount of backlash in the motor connection in steps
-#define GLUE_CLEAR_POSITIVE 13000   
-#define GLUE_CLEAR_NEGATIVE 3000    
-#define GLUE_MARGIN 1000                         //amount of extra steps inwards to start gluing from
-// //amount inwards from edge to begin glue
 
-//10900 max width positive edge position
-//4000 max widrh negative edge position
+//measured glue positions relative to slots
+//5100 -> wide edge touching
+//4700 -> narrow edge touching
+//3350 -> center
+//2000 -> narrow edge touching
+//1700 -> wide edge touching
 
-//10000 min width positive edge position
-//4700 min width negative edge position
+#define CENTER_POSITION 3350                    //step position of the center of the board
+#define MIN_ARC_LENGTH 2700                     //arc length of the board at its narrowest
+#define GLUE_CLEAR_POSITIVE 6100                //position for glue needle to be clear of board on far side
+#define GLUE_CLEAR_NEGATIVE 700                 //position for glue needle to be clear of board on close side 
+#define GLUE_MARGIN 200                         //amount of extra steps in from the edge of the glue arc to activate the glue stream
+
 
 #define PIN_SCALE_DOUT A1                       //weight strain gauge data pin
 #define PIN_SCALE_PD_SCK A0                     //weight strain gauge power-down & serial clock pin
